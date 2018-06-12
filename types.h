@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdlib.h>
 #define MAXHEIGHT 32
 #define MAXWIDTH 32

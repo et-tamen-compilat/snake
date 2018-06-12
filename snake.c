@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 #include "types.h"
@@ -81,6 +80,8 @@ snake_t *create_snake(){
   s->tail = tail;
   return s;
 }
+
+
 
 int main(int argc, char **argv) {
   struct RGBLedMatrixOptions options;
