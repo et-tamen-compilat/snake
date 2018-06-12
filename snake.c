@@ -1,12 +1,29 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <linux/input.h>
+#include <poll.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include "types.h"
 #include "led-matrix-c.h"
 
 //Checks to see if two points are equal
 bool point_equal(point_t p1, point_t p2){
   return (p1.x == p2.x && p1.y == p2.y);
+}
+
+// Returns true if will be out of bounds
+bool out_bounds(point_t p, direction d){
+  return (
+      (p.y == 0 && d == UP) ||
+      (p.y == MAXHEIGHT - 1 && d == DOWN) ||
+      (p.x == 0 && d == LEFT) ||
+      (p.x == MAXWIDTH - 1 && d == RIGHT)
+      );
 }
 
 //Checks to see if two nodes are equal
@@ -17,8 +34,9 @@ bool node_equal(node_t n1, node_t n2){
 // Checks to see if point occurs in snake
 bool intersects(snake_t s, point_t p){
   node_t *curr = s.head;
-  while (!node_equal(*curr, *s.tail)){
-    if (point_equal(curr->point, p)){
+  while (curr != NULL) {
+    if (point_equal(curr->point, p)) {
+      printf("(%i, %i) (%i, %i)\n", p.x, p.y, curr->point.x, curr->point.y);
       return true;
     } 
     curr = curr->next;
@@ -27,9 +45,11 @@ bool intersects(snake_t s, point_t p){
 }
 
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c) {
+  led_canvas_clear(canvas);
   node_t *current = s->head;
   while (current != NULL) {
     point_t *p = &(current->point);
+    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     led_canvas_set_pixel(canvas, p->x, p->y, c->r, c->g, c->b);
     current = current->next;
   }
@@ -54,14 +74,21 @@ point_t direct_point(point_t p, direction d){
   return p;
 }
 
-// Returns true if will be out of bounds
-bool out_bounds(point_t p, direction d){
-  return (
-      (p.y == 0 && d == UP) ||
-      (p.y == MAXHEIGHT - 1 && d == DOWN) ||
-      (p.x == 0 && d == LEFT) ||
-      (p.x == MAXWIDTH - 1 && d == RIGHT)
-      );
+bool perform_move(snake_t *snake, direction d) {
+  if (out_bounds(snake->tail->point, d)) {
+    return false; 
+  }
+//  printf("%p\n", snake->head);
+  snake->head = snake->head->next;
+  point_t p = direct_point(snake->tail->point, d);
+  if (intersects(*snake, p)) {
+    return false;
+  }
+  node_t *nova = malloc(sizeof(node_t));
+  *nova = (node_t) { p, NULL };
+  snake->tail->next = nova;
+  snake->tail = nova;
+  return true;
 }
 
 snake_t *create_snake(){
@@ -81,7 +108,35 @@ snake_t *create_snake(){
   return s;
 }
 
+input input_init(struct input_event e) {
+  input i;
+  if (e.type == 3 && e.code == 1 && e.value == 0) {
+    i = I_UP;
+  } else if (e.type == 3 && e.code == 1 && e.value == 255) {
+    i = I_DOWN;
+  } else if (e.type == 3 && e.code == 0 && e.value == 0) {
+    i = I_LEFT;
+  } else if (e.type == 3 && e.code == 0 && e.value == 255) {
+    i = I_RIGHT;
+  } else if (e.value == 589826) {
+    i = I_A;
+  } else if (e.value == 589825) {
+    i = I_B;
+  } else if (e.value == 589833) {
+    i = I_SELECT;
+  } else {
+    printf("Invalid input event value: %i\n", e.value);
+  }
+  return i;
+}
 
+static long getMilliseconds() {
+  struct timeval t;
+  gettimeofday(&t, NULL); 
+  return (t.tv_sec * 1000) + (t.tv_usec / 1000);
+}
+
+#define MAX(a, b) (a < b ? b : a)
 
 int main(int argc, char **argv) {
   struct RGBLedMatrixOptions options;
@@ -108,25 +163,63 @@ int main(int argc, char **argv) {
    * we get back the unused buffer to which we'll draw in the next
    * iteration.
    */
-  snake_t *snake = malloc(sizeof(snake));
-  snake = create_snake();
+  //snake_t *snake = malloc(sizeof(snake));
+  snake_t *snake = create_snake();
   colour_t *colour = malloc(sizeof(colour));
   colour->r = 255;
   colour->g = colour->b = 0;
-  for (int i = 0; i < 1000; i++) {
+  direction d = RIGHT;
+/*  for (int i = 0; i < 1000; i++) {
     draw_snake(offscreen_canvas, snake, colour);
     
     offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-  }
+  }*/
+
   /*
    * Make sure to always call led_matrix_delete() in the end to reset the
    * display. Installing signal handlers for defined exit is a good idea.
    */
+  draw_snake(offscreen_canvas, snake, colour);
+  offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+  int fd = open("/dev/input/by-id/usb-0810_usb_gamepad-event-joystick", O_RDONLY);
+  struct pollfd p = (struct pollfd) { fd, POLLIN };
+  struct input_event *garbage = malloc(sizeof(struct input_event)*5);
+  long time = getMilliseconds() + INTERVAL;
+  while (true) {
+    int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
+    if (poll_res == 0) {
+      printf("Timed out %ld\n", getMilliseconds());
+      if (perform_move(snake, d)) {
+        draw_snake(offscreen_canvas, snake, colour);
+        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+        time += INTERVAL;
+        continue;
+      } else {
+        break;
+      }
+    }  
+    struct input_event e;
+    input i;
+    read(fd, &e, sizeof(struct input_event));
+    // Saves input direction
+    i = input_init(e);
+    printf("%i\n", i);
+    // Skips next 3 or 5 input events depending on command
+    // Direction command
+    if (e.type == 3) {
+      read(fd, garbage, sizeof(struct input_event));
+      read(fd, garbage, sizeof(struct input_event));
+      read(fd, garbage, sizeof(struct input_event));
+      d = i;
+    }
+    // A, B or Select command
+    else {
+      read(fd, garbage, sizeof(struct input_event)*5);
+    }
+    printf("%i %i %i\n", e.type, e.code, e.value);
+  }
+  free(garbage);
   led_matrix_delete(matrix);
-  return 0;
+  return EXIT_SUCCESS;
 }
-
-
-
-
 
