@@ -34,3 +34,13 @@ typedef enum {
   LEFT,
   RIGHT
 } direction;
+
+typedef enum {
+  I_UP,
+  I_DOWN,
+  I_LEFT,
+  I_RIGHT,
+  I_A,
+  I_B,
+  I_SELECT
+} input; 
