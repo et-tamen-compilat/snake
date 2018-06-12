@@ -30,10 +30,8 @@ bool intersects(snake_t s, point_t p){
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c) {
   node_t *current = s->head;
   while (current != NULL) {
-    point_t *p = malloc(sizeof(point_t));
-    *p = current->point;
+    point_t *p = &(current->point);
     led_canvas_set_pixel(canvas, p->x, p->y, c->r, c->g, c->b);
-    free(p);
     current = current->next;
   }
 }
@@ -56,44 +54,6 @@ point_t direct_point(point_t p, direction d){
   }
   return p;
 }
-
-int main(int argc, char **argv) {
-  struct RGBLedMatrixOptions options;
-  struct RGBLedMatrix *matrix;
-  struct LedCanvas *offscreen_canvas;
-  int width, height;
-  int x, y, i;
-
-  memset(&options, 0, sizeof(options));
-  options.rows = 32;
-  options.chain_length = 1;
-
-  matrix = led_matrix_create_from_options(&options, &argc, &argv);
-  if (matrix == NULL) {
-    return 1;
-  }
-  /* Let's do an example with double-buffering. We create one extra
-   * buffer onto which we draw, which is then swapped on each refresh.
-   * This is typically a good aproach for animations and such.
-   */
-  offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
-  led_canvas_get_size(offscreen_canvas, &width, &height);
-  fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
-      width, height, options.hardware_mapping);
-  /* Now, we swap the canvas. We give swap_on_vsync the buffer we
-   * just have drawn into, and wait until the next vsync happens.
-   * we get back the unused buffer to which we'll draw in the next
-   * iteration.
-   */
-  offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-  /*
-   * Make sure to always call led_matrix_delete() in the end to reset the
-   * display. Installing signal handlers for defined exit is a good idea.
-   */
-  led_matrix_delete(matrix);
-  return 0;
-}
-
 
 // Returns true if will be out of bounds
 bool out_bounds(point_t p, direction d){
@@ -121,6 +81,51 @@ snake_t *create_snake(){
   s->tail = tail;
   return s;
 }
+
+int main(int argc, char **argv) {
+  struct RGBLedMatrixOptions options;
+  struct RGBLedMatrix *matrix;
+  struct LedCanvas *offscreen_canvas;
+  int width, height;
+  int x, y, i;
+
+  memset(&options, 0, sizeof(options));
+  options.rows = 32;
+  options.chain_length = 1;
+
+  matrix = led_matrix_create_from_options(&options, &argc, &argv);
+  if (matrix == NULL) {
+    return 1;
+  }
+  /*Creates an extra buffer to draw to before swapping on refresh*/
+  offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
+  led_canvas_get_size(offscreen_canvas, &width, &height);
+  fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
+      width, height, options.hardware_mapping);
+  /* Now, we swap the canvas. We give swap_on_vsync the buffer we
+   * just have drawn into, and wait until the next vsync happens.
+   * we get back the unused buffer to which we'll draw in the next
+   * iteration.
+   */
+  snake_t *snake = malloc(sizeof(snake));
+  snake = create_snake();
+  colour_t *colour = malloc(sizeof(colour));
+  colour->r = 255;
+  colour->g = colour->b = 0;
+  for (int i = 0; i < 1000; i++) {
+    draw_snake(offscreen_canvas, snake, colour);
+    
+    offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+  }
+  /*
+   * Make sure to always call led_matrix_delete() in the end to reset the
+   * display. Installing signal handlers for defined exit is a good idea.
+   */
+  led_matrix_delete(matrix);
+  return 0;
+}
+
+
 
 
 
