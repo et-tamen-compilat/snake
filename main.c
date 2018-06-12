@@ -36,7 +36,10 @@ int main(int argc, char *argv[]) {
   struct pollfd p = (struct pollfd) { fd, POLLIN };
   struct input_event *garbage = malloc(sizeof(struct input_event)*5);
   while (1) {
-    poll(&p, 1, -1);
+    int poll_res = poll(&p, 1, INTERVAL);
+    if (poll_res == 0) {
+      printf("Timed out\n");
+    }  
     struct input_event e;
     input i;
     read(fd, &e, sizeof(struct input_event));
