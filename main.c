@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
     // A, B or Select command
     else {
-      read(fd, garbage, sizeof(struct iput_event)*5);
+      read(fd, garbage, sizeof(struct input_event)*5);
     }
     printf("%i %i %i\n", e.type, e.code, e.value);
   }
