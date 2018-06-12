@@ -24,8 +24,8 @@ typedef struct node {
 } node_t;
 
 typedef struct {
-  node_t head;
-  node_t tail;
+  node_t *head;
+  node_t *tail;
 } snake_t;
 
 typedef enum {
