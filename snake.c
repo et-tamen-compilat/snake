@@ -26,7 +26,7 @@ bool out_bounds(point_t p, direction d){
       );
 }
 
-bool illegal_direction(point_t p, direction curr_d, direction new_d) {
+bool illegal_direction(direction curr_d, direction new_d) {
   return (
       (curr_d == RIGHT && new_d == LEFT) ||
       (curr_d == LEFT && new_d == RIGHT) ||
@@ -360,7 +360,9 @@ int main(int argc, char **argv) {
     if (i != 10) {
       read(fd, garbage, sizeof(struct js_event));
       if (i >= 0 && i <= 3) {
-        d = i;
+        if (!illegal_direction(d, i)) {
+          d = i;
+        }
         printf("D: %i\n", d);
       }
     }
