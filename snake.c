@@ -152,21 +152,22 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   }
 }
 
-void draw_map(struct LedCanvas *canvas) {
+wall_t *create_map() {
   int num_walls = 5;
+  wall_t wall_arr[5];
   for (int i = 0; i < num_walls; i++) {
     bool created = false;
     while (!created) {
       wall_t *wall;
-      wall = create_wall();
+      wall_arr[i] = *(create_wall());
       if (wall->start.x > SNAKE_SAFETY.x && wall->start.y > SNAKE_SAFETY.y) {
         created = true;
-        draw_wall(canvas, wall);
+      } else {
         free(wall);
       }
     }
   }
-
+  return wall_arr;
 }
 
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
