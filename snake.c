@@ -27,7 +27,7 @@ bool out_bounds(point_t p, direction d){
       );
 }
 
-bool illegal_direction(point_t p, direction curr_d, direction new_d) {
+bool illegal_direction(direction curr_d, direction new_d) {
   return (
       (curr_d == RIGHT && new_d == LEFT) ||
       (curr_d == LEFT && new_d == RIGHT) ||
@@ -130,12 +130,54 @@ wall_t *create_wall() {
   return wall;
 }
 
-void draw_map(struct LedCanvas *canvas, colour_t *c) {
-
+void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
+  int x0 = wall->start.x;
+  int y0 = wall->start.y;
+  switch (wall->direction) {
+    case UP: 
+      draw_line(canvas, x0, y0, x0, y0 - wall->length, WALL_COLOUR.r,
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+    case DOWN:
+      draw_line(canvas, x0, y0, x0, y0 + wall->length, WALL_COLOUR.r,
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+    case RIGHT:
+      draw_line(canvas, x0, y0, x0 + wall->length, y0, WALL_COLOUR.r, 
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+    case LEFT:
+      draw_line(canvas, x0, y0, x0 - wall->length, y0, WALL_COLOUR.r,
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+  }
 }
 
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food) {
+#define NUM_WALLS 10
+
+wall_t *create_map() {
+  int num_walls = NUM_WALLS;
+  wall_t *wall_arr = malloc(sizeof(wall_t) * num_walls);
+  for (int i = 0; i < num_walls; i++) {
+    bool created = false;
+    while (!created) {
+      wall_t *wall;
+      wall_arr[i] = *(create_wall());
+      if (wall->start.x > SNAKE_SAFETY.x && wall->start.y > SNAKE_SAFETY.y) {
+        created = true;
+      } else {
+        free(wall);
+      }
+    }
+  }
+  return wall_arr;
+}
+
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
   led_canvas_clear(canvas);
+  for (int i = 0; i < NUM_WALLS; i++) {
+    draw_wall(canvas, &walls[i]);
+  }
   node_t *current = s->head;
   int len = 0;
   while (current != NULL) {
@@ -158,7 +200,7 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
 //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
-  if (TIME_AFTER_DEATH == -1) {
+  if (k % 10 == 0 && TIME_AFTER_DEATH == -1) {
     led_canvas_set_pixel(canvas, food.x, food.y, 255, 0, 0);
   }
 }
@@ -302,26 +344,29 @@ int main(int argc, char **argv) {
    * display. Installing signal handlers for defined exit is a good idea.
    */
   int multiplier = 5;
-  draw_snake(offscreen_canvas, snake, &multicolour, food);
+  wall_t *walls = create_map();
+  draw_snake(offscreen_canvas, snake, &multicolour, food, 0, walls);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
   struct input_event *garbage = malloc(sizeof(struct js_event)*5);
-  long time = getMilliseconds() + INTERVAL;
+  long time = getMilliseconds() + (INTERVAL / 10);
+  int k = 0;
   while (true) {
     int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
     if (poll_res == 0) {
+      k++;
       printf("Timed out %ld\n", getMilliseconds());
-      if (perform_move(snake, d, &food)) {
-        draw_snake(offscreen_canvas, snake, &multicolour, food);
-        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-        time += INTERVAL * multiplier;
-        continue;
-        // Snake died
-      } else {
-        TIME_AFTER_DEATH = 0;
-        break;
-      }
+      if (k % 10 == 9) {
+        if (!perform_move(snake, d, &food)) {
+          TIME_AFTER_DEATH = 0;
+          break;
+        }
+      } 
+      draw_snake(offscreen_canvas, snake, &multicolour, food, k, walls);
+      offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+      time += (INTERVAL / 10) * multiplier;
+      continue;
     }  
     struct js_event e;
     read(fd, &e, sizeof(struct js_event));
@@ -330,7 +375,9 @@ int main(int argc, char **argv) {
     if (i != 10) {
       read(fd, garbage, sizeof(struct js_event));
       if (i >= 0 && i <= 3) {
-        d = i;
+        if (!illegal_direction(d, i)) {
+          d = i;
+        }
         printf("D: %i\n", d);
       }
     }
