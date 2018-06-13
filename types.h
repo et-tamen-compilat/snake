@@ -5,6 +5,8 @@
 #define INTERVAL 100
 #define WALL_MAX_LEN 7
 #define WALL_MIN_LEN 3
+#define WALL_COLOUR (colour_t){216, 150, 18}
+#define SNAKE_SAFETY (point_t){10, 4}
 
 typedef struct {
  uint8_t x;
@@ -42,7 +44,7 @@ typedef enum {
 typedef struct {
   point_t start;
   uint8_t length;
-  direction d;
+  direction direction;
   colour_t colour;
 } wall_t;
 
