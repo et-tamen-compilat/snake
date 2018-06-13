@@ -64,7 +64,6 @@ point_t get_food(snake_t *snake) {
   return point;
 }
 
-<<<<<<< HEAD
 colour_t get_default(int pos) {
   colour_t b = {255, 0, 0};
   return b;
@@ -119,7 +118,7 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
     point_t *p = &(current->point);
 //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     colour_t k = c(pos++);
-    led_canvas_set_pixel(canvas, p->x, p->y, k->r, k->g, k->b);
+    led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
     current = current->next;
   }
   led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
@@ -299,7 +298,7 @@ int main(int argc, char **argv) {
     } else if (i = I_A && multiplier < 10) {
       multiplier++;
     }
-    printf("%i %i %i\n", e.type, e.code, e.value);
+    //printf("%i %i %i\n", e.type, e.code, e.value);
   }
   free(garbage);
   led_matrix_delete(matrix);
