@@ -62,13 +62,33 @@ point_t get_food(snake_t *snake) {
   return point;
 }
 
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c, point_t food) {
+colour_t get_default(int pos) {
+  colour_t b = {255, 0, 0};
+  return b;
+}
+
+colour_t multicolour(int pos) {
+  colour_t colours[] = {
+    { 255, 0, 0 },
+    { 0, 0, 255 },
+    { 175, 65, 244 },
+    { 65, 244, 238 },
+    { 232, 126, 99 },
+    { 249, 154, 222 },
+    { 192, 249, 154 }
+  };
+  return colours[pos % 7];
+}
+
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food) {
   led_canvas_clear(canvas);
   node_t *current = s->head;
+  int pos = 0;
   while (current != NULL) {
     point_t *p = &(current->point);
-    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
-    led_canvas_set_pixel(canvas, p->x, p->y, c->r, c->g, c->b);
+//    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
+    colour_t k = c(pos++);
+    led_canvas_set_pixel(canvas, p->x, p->y, k->r, k->g, k->b);
     current = current->next;
   }
   led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
@@ -211,7 +231,7 @@ int main(int argc, char **argv) {
    * display. Installing signal handlers for defined exit is a good idea.
    */
   int multiplier = 5;
-  draw_snake(offscreen_canvas, snake, colour, food);
+  draw_snake(offscreen_canvas, snake, &multicolour, food);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
@@ -222,7 +242,7 @@ int main(int argc, char **argv) {
     if (poll_res == 0) {
       printf("Timed out %ld\n", getMilliseconds());
       if (perform_move(snake, d, &food)) {
-        draw_snake(offscreen_canvas, snake, colour, food);
+        draw_snake(offscreen_canvas, snake, &multicolour, food);
         offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
         time += INTERVAL * multiplier;
         continue;
