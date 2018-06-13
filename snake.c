@@ -26,10 +26,10 @@ bool out_bounds(point_t p, direction d){
       );
 }
 
-bool illegal_direction(point_t p, direction curr_d, direction new_d) {
+bool illegal_direction(direction curr_d, direction new_d) {
   return (
-      (curr_d == RIGHT && (new_d == LEFT || new_d == RIGHT) ||
-      (curr_d == LEFT && (new_d == RIGHT || new_d == LEFT) ||
+      (curr_d == RIGHT && (new_d == LEFT || new_d == RIGHT)) ||
+      (curr_d == LEFT && (new_d == RIGHT || new_d == LEFT)) ||
       (curr_d == UP && (new_d == DOWN || new_d == UP)) ||
       (curr_d == DOWN && (new_d == UP || new_d == DOWN))
       );
@@ -152,12 +152,14 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   }
 }
 
+#define NUM_WALLS 10
+
 wall_t *create_map() {
-  int num_walls = 5;
-  wall_t wall_arr[5] = malloc(;
-      for (int i = 0; i < num_walls; i++) {
-      bool created = false;
-      while (!created) {
+  int num_walls = NUM_WALLS;
+  wall_t *wall_arr = malloc(sizeof(wall_t) * num_walls);
+  for (int i = 0; i < num_walls; i++) {
+    bool created = false;
+    while (!created) {
       wall_t *wall;
       wall_arr[i] = *(create_wall());
       if (wall->start.x > SNAKE_SAFETY.x && wall->start.y > SNAKE_SAFETY.y) {
@@ -170,29 +172,32 @@ wall_t *create_map() {
       return wall_arr;
       }
 
-      void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
-      led_canvas_clear(canvas);
-      node_t *current = s->head;
-      int len = 0;
-      while (current != NULL) {
-        current = current->next;
-        len++;
-      }
-      current = s->head;
-      int pos = 0;
-      while (current != NULL) {
-        point_t *p = &(current->point);
-        //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
-        colour_t k = c(len - pos);
-        pos++;
-        led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
-        //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
-        current = current->next;
-      }
-      if (k % 10 == 0) {
-        led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
-      }
-      }
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
+  led_canvas_clear(canvas);
+  for (int i = 0; i < NUM_WALLS; i++) {
+    draw_wall(canvas, &walls[i]);
+  }
+  node_t *current = s->head;
+  int len = 0;
+  while (current != NULL) {
+    current = current->next;
+    len++;
+  }
+  current = s->head;
+  int pos = 0;
+  while (current != NULL) {
+    point_t *p = &(current->point);
+//    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
+    colour_t k = c(len - pos);
+    pos++;
+    led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
+//    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
+    current = current->next;
+  }
+  if (k % 10 == 0) {
+    led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
+  }
+}
 
 // applies movement of one space to point in direction 
 point_t direct_point(point_t p, direction d){
@@ -323,7 +328,8 @@ int main(int argc, char **argv) {
    * display. Installing signal handlers for defined exit is a good idea.
    */
   int multiplier = 5;
-  draw_snake(offscreen_canvas, snake, &multicolour, food, 0);
+  wall_t *walls = create_map();
+  draw_snake(offscreen_canvas, snake, &multicolour, food, 0, walls);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
@@ -341,7 +347,7 @@ int main(int argc, char **argv) {
           break;
         }
       } 
-      draw_snake(offscreen_canvas, snake, &multicolour, food, k);
+      draw_snake(offscreen_canvas, snake, &multicolour, food, k, walls);
       offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
       time += (INTERVAL / 10) * multiplier;
       continue;
@@ -353,7 +359,9 @@ int main(int argc, char **argv) {
     if (i != 10) {
       read(fd, garbage, sizeof(struct js_event));
       if (i >= 0 && i <= 3) {
-        d = i;
+        if (!illegal_direction(d, i)) {
+          d = i;
+        }
         printf("D: %i\n", d);
       }
     }
