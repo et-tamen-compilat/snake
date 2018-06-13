@@ -152,9 +152,11 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   }
 }
 
+#define NUM_WALLS 10
+
 wall_t *create_map() {
-  int num_walls = 5;
-  wall_t wall_arr[5];
+  int num_walls = NUM_WALLS;
+  wall_t *wall_arr = malloc(sizeof(wall_t) * num_walls);
   for (int i = 0; i < num_walls; i++) {
     bool created = false;
     while (!created) {
@@ -170,8 +172,11 @@ wall_t *create_map() {
   return wall_arr;
 }
 
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
   led_canvas_clear(canvas);
+  for (int i = 0; i < NUM_WALLS; i++) {
+    draw_wall(canvas, &walls[i]);
+  }
   node_t *current = s->head;
   int len = 0;
   while (current != NULL) {
@@ -331,7 +336,8 @@ int main(int argc, char **argv) {
    * display. Installing signal handlers for defined exit is a good idea.
    */
   int multiplier = 5;
-  draw_snake(offscreen_canvas, snake, &multicolour, food, 0);
+  wall_t *walls = create_map();
+  draw_snake(offscreen_canvas, snake, &multicolour, food, 0, walls);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
@@ -349,7 +355,7 @@ int main(int argc, char **argv) {
           break;
         }
       } 
-      draw_snake(offscreen_canvas, snake, &multicolour, food, k);
+      draw_snake(offscreen_canvas, snake, &multicolour, food, k, walls);
       offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
       time += (INTERVAL / 10) * multiplier;
       continue;
