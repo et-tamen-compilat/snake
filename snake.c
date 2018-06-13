@@ -9,9 +9,11 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <time.h>
 #include "types.h"
 #include "led-matrix-c.h"
 
+#define NUM_WALLS 20
 volatile sig_atomic_t done = 0;
 volatile struct RGBLedMatrix *matrix;
 
@@ -52,6 +54,9 @@ bool node_equal(node_t n1, node_t n2){
 }
 
 
+bool food_wall(point_t point, int **collision_map){
+  return (collision_map[point.x][point.y]);
+}
 
 // Checks to see if point occurs in snake
 bool intersects(snake_t s, point_t p){
@@ -66,12 +71,45 @@ bool intersects(snake_t s, point_t p){
   return false;
 }
 
-point_t get_food(snake_t *snake) {
+void add_wall_to_map(int **map, wall_t *wall) {
+  for (int i = 0; i < wall->length; i++) {
+    switch (wall->direction) {
+      case UP: 
+        map[wall->start.x][wall->start.y - i] = 1;
+        break;
+      case DOWN:
+        map[wall->start.x][wall->start.y + i] = 1;
+        break;
+      case LEFT:
+        map[wall->start.x - i][wall->start.y] = 1;
+        break;
+      case RIGHT:
+        map[wall->start.x + i][wall->start.y] = 1;
+        break;
+    }
+  }
+}
+
+
+int **create_collision_map(wall_t *wall_arr) {
+  int **map = malloc(sizeof(int *) * MAX_WIDTH);
+  for (int i = 0; i < MAX_WIDTH; i++) {
+    map[i] = calloc(MAX_HEIGHT, sizeof(int));
+  }
+//  memset(map, 0, sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
+  for (int i = 0; i < NUM_WALLS; i++) {
+    add_wall_to_map(map, &(wall_arr[i]));
+  }
+  return map; 
+}
+
+
+point_t get_food(snake_t *snake, wall_t* wall_arr) {
   point_t point;
   do {
     point.x = rand() % MAX_WIDTH;
     point.y = rand() % MAX_HEIGHT;
-  } while(intersects(*snake, point));
+  } while(intersects(*snake, point) || food_wall(point, create_collision_map(wall_arr)));
   return point;
 }
 
@@ -100,12 +138,10 @@ int get_rand_int(int min, int max) {
 }
 
 direction get_rand_dir() {
-  int num = get_rand_int(0, 3);
+  int num = get_rand_int(0, 1);
   switch (num) {
-    case 0: return UP; break;
-    case 1: return DOWN; break;
-    case 2: return LEFT; break;
-    case 3: return RIGHT; break;
+    case 0: return DOWN; break;
+    case 1: return RIGHT; break;
     default: break;
   }
 }
@@ -114,29 +150,34 @@ direction get_rand_dir() {
 int calc_length(point_t start, direction d) {
   switch (d) {
     case UP: 
-      return start.y - 1 > WALL_MAX_LEN ? WALL_MAX_LEN : start.y - 1;
+      return start.y > WALL_MAX_LEN ? WALL_MAX_LEN : start.y;
       break;
     case DOWN:
-      return MAX_HEIGHT - start.y - 1 > WALL_MAX_LEN ? WALL_MAX_LEN :
-        MAX_HEIGHT - start.y - 1;
+      return MAX_HEIGHT - start.y > WALL_MAX_LEN ? WALL_MAX_LEN :
+        MAX_HEIGHT - start.y;
       break;
     case LEFT:
-      return start.x - 1 > WALL_MAX_LEN ? WALL_MAX_LEN : start.x - 1;
+      return start.x > WALL_MAX_LEN ? WALL_MAX_LEN : start.x;
       break;
     case RIGHT:
-      return MAX_WIDTH - start.x - 1 > WALL_MAX_LEN ? WALL_MAX_LEN :
-        MAX_WIDTH - start.x - 1;
+      return MAX_WIDTH - start.x > WALL_MAX_LEN ? WALL_MAX_LEN :
+        MAX_WIDTH - start.x;
       break;
   }
 }
 
 wall_t *create_wall() {
   wall_t *wall = malloc(sizeof(wall_t));
-  wall->start = (point_t) {get_rand_int(WALL_MIN_LEN + 1, MAX_WIDTH - 1),
-    get_rand_int(WALL_MIN_LEN + 1, MAX_WIDTH - 1)};
+  wall->length = get_rand_int(WALL_MIN_LEN, WALL_MAX_LEN);
   wall->direction = get_rand_dir();
-  wall->length = get_rand_int(WALL_MIN_LEN, calc_length(wall->start, 
-        wall->direction));
+
+  int x = MAX_WIDTH, y = MAX_HEIGHT;
+  switch (wall->direction) {
+    case RIGHT: x -= wall->length;
+    case DOWN: y -= wall->length;
+  }
+
+  wall->start = (point_t) {get_rand_int(0, x), get_rand_int(0, y)};
   wall->colour = WALL_COLOUR;
   return wall;
 }
@@ -164,7 +205,6 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   }
 }
 
-#define NUM_WALLS 10
 
 wall_t *create_map() {
   int num_walls = NUM_WALLS;
@@ -183,42 +223,8 @@ wall_t *create_map() {
   }
   return wall_arr;
 }
-
-void add_wall_to_map(int **map, wall_t *wall) {
-  for (int i = 0; i < wall->length; i++) {
-    switch (wall->direction) {
-      case UP: 
-        map[wall->start.x][wall->start.y - i] = 1;
-        break;
-      case DOWN:
-        map[wall->start.x][wall->start.y + i] = 1;
-        break;
-      case LEFT:
-        map[wall->start.x - i][wall->start.y] = 1;
-        break;
-      case RIGHT:
-        map[wall->start.x + i][wall->start.y] = 1;
-        break;
-    }
-  }
-}
-
-
-int **create_collision_map(wall_t *wall_arr) {
-  int **map = malloc(sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
-  memset(map, 0, sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
-  for (int i = 0; i < NUM_WALLS; i++) {
-    add_wall_to_map(map, &(wall_arr[i]));
-  }
-  return map; 
-}
-
 //Check map for food, check it's not on top of a wall basically
 //In main, put this in a while look when generating food
-bool food_wall(food_t food, int **collision_map){
-  return (collision_map[food.point.x][food.point.y]);
-}
-
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
   led_canvas_clear(canvas);
   for (int i = 0; i < NUM_WALLS; i++) {
@@ -271,7 +277,7 @@ point_t direct_point(point_t p, direction d){
   return p;
 }
 
-bool perform_move(snake_t *snake, direction d, point_t* food) {
+bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
   }
@@ -290,7 +296,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food) {
   snake->tail->next = nova;
   snake->tail = nova;
   if (eq) {
-    *food = get_food(snake);
+    *food = get_food(snake, walls);
     snake->length++;
   }
   return true;
@@ -357,6 +363,9 @@ int main(int argc, char **argv) {
   struct LedCanvas *offscreen_canvas;
   int width, height;
   int x, y, i;
+  srand(time(NULL));
+  
+//  srand(45);
 
   memset(&options, 0, sizeof(options));
   options.rows = 32;
@@ -377,7 +386,6 @@ int main(int argc, char **argv) {
    * iteration.
    */
   snake_t *snake = create_snake();
-  point_t food = get_food(snake);
   colour_t *colour = malloc(sizeof(colour));
   colour->r = 255;
   colour->g = colour->b = 0;
@@ -388,27 +396,28 @@ int main(int argc, char **argv) {
    */
   int multiplier = 5;
   wall_t *walls = create_map();
+  point_t food = get_food(snake, walls);
   draw_snake(offscreen_canvas, snake, &multicolour, food, 0, walls);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
   struct input_event *garbage = malloc(sizeof(struct js_event)*5);
-  long time = getMilliseconds() + (INTERVAL / 10);
+  long curr_time = getMilliseconds() + (INTERVAL / 10);
   int k = 0;
   while (true) {
-    int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
+    int poll_res = poll(&p, 1, (int) MAX(curr_time - getMilliseconds(), 0));
     if (poll_res == 0) {
       k++;
       printf("Timed out %ld\n", getMilliseconds());
       if (k % 10 == 9) {
-        if (!perform_move(snake, d, &food)) {
+        if (!perform_move(snake, d, &food, walls)) {
           TIME_AFTER_DEATH = 0;
           break;
         }
       } 
       draw_snake(offscreen_canvas, snake, &get_default, food, k, walls);
       offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-      time += (INTERVAL / 10) * multiplier;
+      curr_time += (INTERVAL / 10) * multiplier;
       continue;
     }  
     struct js_event e;
