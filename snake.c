@@ -163,14 +163,43 @@ wall_t *create_map() {
       wall_t *wall;
       wall_arr[i] = *(create_wall());
       if (wall->start.x > SNAKE_SAFETY.x && wall->start.y > SNAKE_SAFETY.y) {
-      created = true;
+        created = true;
       } else {
-      free(wall);
+        free(wall);
       }
-      }
-      }
-      return wall_arr;
-      }
+    }
+  }
+  return wall_arr;
+}
+
+void add_wall_to_map(int **map, wall_t *wall) {
+  for (int i = 0; i < wall->length; i++) {
+    switch (wall->direction) {
+      case UP: 
+        map[wall->start.x][wall->start.y - i] = 1;
+        break;
+      case DOWN:
+        map[wall->start.x][wall->start.y + i] = 1;
+        break;
+      case LEFT:
+        map[wall->start.x - i][wall->start.y] = 1;
+        break;
+      case RIGHT:
+        map[wall->start.x + i][wall->start.y] = 1;
+        break;
+    }
+  }
+}
+
+
+int **create_collision_map(wall_t *wall_arr) {
+  int **map = malloc(sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
+  memset(map, 0, sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
+  for (int i = 0; i < NUM_WALLS; i++) {
+    add_wall_to_map(map, &(wall_arr[i]));
+  }
+  return map; 
+}
 
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
   led_canvas_clear(canvas);
@@ -187,11 +216,11 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
   int pos = 0;
   while (current != NULL) {
     point_t *p = &(current->point);
-//    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
+    //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     colour_t k = c(len - pos);
     pos++;
     led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
-//    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
+    //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
   if (k % 10 == 0) {
