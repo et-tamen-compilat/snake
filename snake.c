@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <time.h>
 #include "types.h"
 #include "led-matrix-c.h"
 
@@ -343,6 +344,7 @@ int main(int argc, char **argv) {
   struct LedCanvas *offscreen_canvas;
   int width, height;
   int x, y, i;
+  srand(time(NULL));
 
   memset(&options, 0, sizeof(options));
   options.rows = 32;
@@ -379,10 +381,10 @@ int main(int argc, char **argv) {
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
   struct input_event *garbage = malloc(sizeof(struct js_event)*5);
-  long time = getMilliseconds() + (INTERVAL / 10);
+  long curr_time = getMilliseconds() + (INTERVAL / 10);
   int k = 0;
   while (true) {
-    int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
+    int poll_res = poll(&p, 1, (int) MAX(curr_time - getMilliseconds(), 0));
     if (poll_res == 0) {
       k++;
       printf("Timed out %ld\n", getMilliseconds());
@@ -394,7 +396,7 @@ int main(int argc, char **argv) {
       } 
       draw_snake(offscreen_canvas, snake, &get_default, food, k, walls);
       offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-      time += (INTERVAL / 10) * multiplier;
+      curr_time += (INTERVAL / 10) * multiplier;
       continue;
     }  
     struct js_event e;
