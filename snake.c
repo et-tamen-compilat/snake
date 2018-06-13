@@ -40,6 +40,8 @@ bool node_equal(node_t n1, node_t n2){
   return (point_equal(n1.point, n2.point) && n1.next == n2.next);
 }
 
+
+
 // Checks to see if point occurs in snake
 bool intersects(snake_t s, point_t p){
   node_t *curr = s.head;
@@ -60,6 +62,34 @@ point_t get_food(snake_t *snake) {
     point.y = rand() % MAX_HEIGHT;
   } while(intersects(*snake, point));
   return point;
+}
+
+//returns random int in range
+int get_rand_int(int min, int max) {
+  return rand() % (max + 1 - min) + min;
+}
+
+direction get_rand_dir() {
+  int num = get_rand_int(0, 3);
+  switch (num) {
+    case 0: return UP; break;
+    case 1: return DOWN; break;
+    case 2: return LEFT; break;
+    case 3: return RIGHT; break;
+    default: break;
+  }
+}
+
+wall_t *create_wall() {
+  wall_t *wall = malloc(sizeof(wall_t));
+  wall->start = (point_t) {get_rand_int(0, MAX_WIDTH - 1), get_rand_int(0, MAX_WIDTH - 1)};
+  wall->length = get_rand_int(WALL_MIN_LEN, WALL_MAX_LEN);
+  return wall;
+
+}
+
+void draw_map(struct LedCanvas *canvas, colour_t *c) {
+
 }
 
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c, point_t food) {
