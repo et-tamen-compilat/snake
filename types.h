@@ -48,6 +48,11 @@ typedef struct {
   colour_t colour;
 } wall_t;
 
+typedef struct {
+  wall_t *head;
+  wall_t *tail;
+} wall_list_t;
+
 typedef enum {
   I_UP,
   I_DOWN,

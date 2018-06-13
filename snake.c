@@ -28,10 +28,10 @@ bool out_bounds(point_t p, direction d){
 
 bool illegal_direction(point_t p, direction curr_d, direction new_d) {
   return (
-      (curr_d == RIGHT && new_d == LEFT) ||
-      (curr_d == LEFT && new_d == RIGHT) ||
-      (curr_d == UP && new_d == DOWN) ||
-      (curr_d == DOWN && new_d == UP)
+      (curr_d == RIGHT && (new_d == LEFT || new_d == RIGHT) ||
+      (curr_d == LEFT && (new_d == RIGHT || new_d == LEFT) ||
+      (curr_d == UP && (new_d == DOWN || new_d == UP)) ||
+      (curr_d == DOWN && (new_d == UP || new_d == DOWN))
       );
 }
 
@@ -154,45 +154,45 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
 
 wall_t *create_map() {
   int num_walls = 5;
-  wall_t wall_arr[5];
-  for (int i = 0; i < num_walls; i++) {
-    bool created = false;
-    while (!created) {
+  wall_t wall_arr[5] = malloc(;
+      for (int i = 0; i < num_walls; i++) {
+      bool created = false;
+      while (!created) {
       wall_t *wall;
       wall_arr[i] = *(create_wall());
       if (wall->start.x > SNAKE_SAFETY.x && wall->start.y > SNAKE_SAFETY.y) {
-        created = true;
+      created = true;
       } else {
-        free(wall);
+      free(wall);
       }
-    }
-  }
-  return wall_arr;
-}
+      }
+      }
+      return wall_arr;
+      }
 
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
-  led_canvas_clear(canvas);
-  node_t *current = s->head;
-  int len = 0;
-  while (current != NULL) {
-    current = current->next;
-    len++;
-  }
-  current = s->head;
-  int pos = 0;
-  while (current != NULL) {
-    point_t *p = &(current->point);
-//    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
-    colour_t k = c(len - pos);
-    pos++;
-    led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
-//    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
-    current = current->next;
-  }
-  if (k % 10 == 0) {
-    led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
-  }
-}
+      void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
+      led_canvas_clear(canvas);
+      node_t *current = s->head;
+      int len = 0;
+      while (current != NULL) {
+        current = current->next;
+        len++;
+      }
+      current = s->head;
+      int pos = 0;
+      while (current != NULL) {
+        point_t *p = &(current->point);
+        //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
+        colour_t k = c(len - pos);
+        pos++;
+        led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
+        //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
+        current = current->next;
+      }
+      if (k % 10 == 0) {
+        led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
+      }
+      }
 
 // applies movement of one space to point in direction 
 point_t direct_point(point_t p, direction d){
@@ -218,7 +218,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food) {
     return false; 
   }
   //  printf("%p\n", snake->head);
-//  snake->head = snake->head->next;
+  //  snake->head = snake->head->next;
   point_t p = direct_point(snake->tail->point, d);
   bool eq = point_equal(*food, p);
   if (!eq) {
@@ -271,13 +271,12 @@ input input_init(struct js_event e) {
     i = I_B;
   } else if (e.value == 1 && e.type == 1 && e.number ==8) {
     i = I_SELECT;
-//  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
-//    i = I_START;
-  } else {
-    printf("Invalid input event value: %i\n", e.value);
-  }
-
-  return i;
+    //  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
+    //    i = I_START;
+} else {
+  printf("Invalid input event value: %i\n", e.value);
+}
+return i;
 }
 
 static long getMilliseconds() {
@@ -313,19 +312,12 @@ int main(int argc, char **argv) {
    * we get back the unused buffer to which we'll draw in the next
    * iteration.
    */
-  //snake_t *snake = malloc(sizeof(snake));
   snake_t *snake = create_snake();
   point_t food = get_food(snake);
   colour_t *colour = malloc(sizeof(colour));
   colour->r = 255;
   colour->g = colour->b = 0;
   direction d = RIGHT;
-  /*  for (int i = 0; i < 1000; i++) {
-      draw_snake(offscreen_canvas, snake, colour);
-
-      offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-      }*/
-
   /*
    * Make sure to always call led_matrix_delete() in the end to reset the
    * display. Installing signal handlers for defined exit is a good idea.
