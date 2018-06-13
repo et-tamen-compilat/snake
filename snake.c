@@ -437,9 +437,9 @@ int main(int argc, char **argv) {
     }
     // A, B or Select command
     //Changes speed of snake
-    if (i = I_B && multiplier > 1) {
+    if (i == I_B && multiplier > 1) {
       multiplier--;
-    } else if (i = I_A && multiplier < 10) {
+    } else if (i == I_A && multiplier < 10) {
       multiplier++;
     }
     //printf("%i %i %i\n", e.type, e.code, e.value);
