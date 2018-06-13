@@ -129,7 +129,43 @@ wall_t *create_wall() {
   return wall;
 }
 
-void draw_map(struct LedCanvas *canvas, colour_t *c) {
+void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
+  int x0 = wall->start.x;
+  int y0 = wall->start.y;
+  switch (wall->direction) {
+    case UP: 
+      draw_line(canvas, x0, y0, x0, y0 - wall->length, WALL_COLOUR.r,
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+    case DOWN:
+      draw_line(canvas, x0, y0, x0, y0 + wall->length, WALL_COLOUR.r,
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+    case RIGHT:
+      draw_line(canvas, x0, y0, x0 + wall->length, y0, WALL_COLOUR.r, 
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+    case LEFT:
+      draw_line(canvas, x0, y0, x0 - wall->length, y0, WALL_COLOUR.r,
+          WALL_COLOUR.g, WALL_COLOUR.b);
+      break;
+  }
+}
+
+void draw_map(struct LedCanvas *canvas) {
+  int num_walls = 5;
+  for (int i = 0; i < num_walls; i++) {
+    bool created = false;
+    while (!created) {
+      wall_t *wall;
+      wall = create_wall();
+      if (wall->start.x > SNAKE_SAFETY.x && wall->start.y > SNAKE_SAFETY.y) {
+        created = true;
+        draw_wall(canvas, wall);
+        free(wall);
+      }
+    }
+  }
 
 }
 
