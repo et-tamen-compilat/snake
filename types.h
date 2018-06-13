@@ -56,3 +56,5 @@ typedef enum {
   I_B,
   I_SELECT
 } input; 
+
+typedef colour_t colour_function_t(int);
