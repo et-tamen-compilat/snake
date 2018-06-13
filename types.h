@@ -3,6 +3,8 @@
 #define MAX_HEIGHT 32
 #define MAX_WIDTH 32
 #define INTERVAL 100
+#define WALL_MAX_LEN 7
+#define WALL_MIN_LEN 3
 
 typedef struct {
  uint8_t x;
@@ -36,6 +38,13 @@ typedef enum {
   LEFT,
   RIGHT
 } direction;
+
+typedef struct {
+  point_t start;
+  uint8_t length;
+  direction d;
+  colour_t colour;
+} wall_t;
 
 typedef enum {
   I_UP,
