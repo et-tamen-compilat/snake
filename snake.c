@@ -227,7 +227,8 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
     //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     colour_t k = c(len - pos);
     pos++;
-    if (TIME_AFTER_DEATH >= pos) {
+    printf("%i %i %i\n", TIME_AFTER_DEATH, pos, TIME_AFTER_DEATH >= pos);
+    if (TIME_AFTER_DEATH >= (len - pos)) {
       led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     }
     else {
@@ -391,7 +392,7 @@ int main(int argc, char **argv) {
           break;
         }
       } 
-      draw_snake(offscreen_canvas, snake, &multicolour, food, k, walls);
+      draw_snake(offscreen_canvas, snake, &get_default, food, k, walls);
       offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
       time += (INTERVAL / 10) * multiplier;
       continue;
@@ -421,8 +422,12 @@ int main(int argc, char **argv) {
 
   for (int i = 0; i < snake->length; i++) {
     draw_snake(offscreen_canvas, snake, &get_default, food, k, walls);
-      TIME_AFTER_DEATH++;
+    offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+    TIME_AFTER_DEATH++;
+    poll(NULL, 0, INTERVAL);
   }    
+
+  while(1);
 
   free(garbage);
   led_matrix_delete(matrix);

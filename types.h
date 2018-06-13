@@ -32,7 +32,7 @@ typedef struct node {
 typedef struct {
   node_t *head;
   node_t *tail;
-  uint8_t *length;
+  uint8_t length;
 } snake_t;
 
 typedef enum {
