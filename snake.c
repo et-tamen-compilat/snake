@@ -69,16 +69,17 @@ colour_t get_default(int pos) {
   return b;
 }
 
+colour_t colours[] = {
+  { 255, 0, 0 },
+  { 0, 0, 255 },
+  { 175, 65, 244 },
+  { 65, 244, 238 },
+  { 232, 126, 99 },
+  { 249, 154, 222 },
+  { 192, 249, 154 }
+};
+
 colour_t multicolour(int pos) {
-  colour_t colours[] = {
-    { 255, 0, 0 },
-    { 0, 0, 255 },
-    { 175, 65, 244 },
-    { 65, 244, 238 },
-    { 232, 126, 99 },
-    { 249, 154, 222 },
-    { 192, 249, 154 }
-  };
   return colours[pos % 7];
 }
 
@@ -113,12 +114,20 @@ void draw_map(struct LedCanvas *canvas, colour_t *c) {
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food) {
   led_canvas_clear(canvas);
   node_t *current = s->head;
+  int len = 0;
+  while (current != NULL) {
+    current = current->next;
+    len++;
+  }
+  current = s->head;
   int pos = 0;
   while (current != NULL) {
     point_t *p = &(current->point);
 //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
-    colour_t k = c(pos++);
+    colour_t k = c(len - pos);
+    pos++;
     led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
+//    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
   led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
@@ -148,7 +157,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food) {
     return false; 
   }
   //  printf("%p\n", snake->head);
-  snake->head = snake->head->next;
+//  snake->head = snake->head->next;
   point_t p = direct_point(snake->tail->point, d);
   bool eq = point_equal(*food, p);
   if (!eq) {
