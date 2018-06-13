@@ -80,12 +80,34 @@ direction get_rand_dir() {
   }
 }
 
+int calc_length(point_t start, direction d) {
+  switch (d) {
+    case UP: 
+      return start.y - 1 > WALL_MAX_LEN ? WALL_MAX_LEN : start.y - 1;
+      break;
+    case DOWN:
+      return MAX_HEIGHT - start.y - 1 > WALL_MAX_LEN ? WALL_MAX_LEN :
+        MAX_HEIGHT - start.y - 1;
+      break;
+    case LEFT:
+      return start.x - 1 > WALL_MAX_LEN ? WALL_MAX_LEN : start.x - 1;
+      break;
+    case RIGHT:
+      return MAX_WIDTH - start.x - 1 > WALL_MAX_LEN ? WALL_MAX_LEN :
+        MAX_WIDTH - start.x - 1;
+      break;
+  }
+}
+
 wall_t *create_wall() {
   wall_t *wall = malloc(sizeof(wall_t));
-  wall->start = (point_t) {get_rand_int(0, MAX_WIDTH - 1), get_rand_int(0, MAX_WIDTH - 1)};
-  wall->length = get_rand_int(WALL_MIN_LEN, WALL_MAX_LEN);
+  wall->start = (point_t) {get_rand_int(WALL_MIN_LEN + 1, MAX_WIDTH - 1),
+    get_rand_int(WALL_MIN_LEN + 1, MAX_WIDTH - 1)};
+  wall->direction = get_rand_dir();
+  wall->length = get_rand_int(WALL_MIN_LEN, calc_length(wall->start, 
+        wall->direction));
+  wall->colour = WALL_COLOUR;
   return wall;
-
 }
 
 void draw_map(struct LedCanvas *canvas, colour_t *c) {
@@ -278,7 +300,7 @@ int main(int argc, char **argv) {
     } else if (i = I_A && multiplier < 10) {
       multiplier++;
     }
-    printf("%i %i %i\n", e.type, e.code, e.value);
+    printf("%i %i %i\n", e.value, e.type, e.number);
   }
   free(garbage);
   led_matrix_delete(matrix);
