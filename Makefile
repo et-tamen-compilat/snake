@@ -1,2 +1,2 @@
 test: test.c core.c types.h
-	gcc test.c core.c -o test
+	gcc -g test.c core.c -o test

@@ -17,16 +17,6 @@ typedef struct {
   bool visited;
 } info_t;
 
-typedef struct point_node {
-  point_t point;
-  struct point_node *next;
-} point_node_t;
-
-typedef struct {
-  point_node_t *head;
-  point_node_t *tail;
-} queue_t;
-
 void queue_enqueue(queue_t *queue, point_t nova) {
   point_node_t *node = calloc(1, sizeof(point_node_t));
   node->point = nova;
@@ -36,6 +26,7 @@ void queue_enqueue(queue_t *queue, point_t nova) {
     queue->head = node;
   }
   queue->tail = node;
+  queue->length++;
 }
 
 void queue_prepend(queue_t *queue, point_t nova) {
@@ -46,10 +37,11 @@ void queue_prepend(queue_t *queue, point_t nova) {
   if (queue->tail == NULL) {
     queue->tail = node;
   } 
+  queue->length++;
 }
 
 bool queue_empty(queue_t *queue) {
-  return queue->head == NULL;
+  return queue->length == 0;
 }
 
 point_t queue_dequeue(queue_t *queue) {
@@ -60,6 +52,7 @@ point_t queue_dequeue(queue_t *queue) {
     queue->tail = NULL;
   }
   point_t point = node->point;
+  queue->length--;
   free(node);
   return point;
 }
@@ -84,10 +77,11 @@ void queue_print(queue_t *queue) {
 typedef struct {
   queue_t *queue;
   int dist;
+  direction d;
 } result_t;
 
 result_t build_shortest_path(info_t **info, point_t dest, point_t start) {
-  result_t result = { queue_init(), 0 };
+  result_t result = { queue_init(), info[dest.x][dest.y].dist, info[dest.x][dest.y].d };
   point_t last = info[dest.x][dest.y].parent;
 //  printf("Here\n");
 //  point_print(last);
@@ -97,18 +91,20 @@ result_t build_shortest_path(info_t **info, point_t dest, point_t start) {
     last = info[last.x][last.y].parent;
     result.dist++;
   }
+  queue_prepend(result.queue, start);
+  queue_enqueue(result.queue, dest);
   return result;
 }
 
-result_t get_shortest_path(snake_t *snake, point_t dest, direction d) {
+result_t get_shortest_path(snake_t *snake, point_t start, point_t dest, direction d) {
   queue_t *queue = queue_init();
   info_t **info = calloc(MAX_WIDTH, sizeof(info_t *)); 
   for (int i = 0; i < MAX_WIDTH; i++) {
     info[i] = calloc(MAX_HEIGHT, sizeof(info_t));
   }
-  point_t start = snake->tail->point;
   queue_enqueue(queue, start);
   info[start.x][start.y].d = d;
+  info[start.x][start.y].dist = 0;
   info[start.x][start.y].visited = true;
   while (!queue_empty(queue)) {
 //    printf("Hello\n");
@@ -122,9 +118,10 @@ result_t get_shortest_path(snake_t *snake, point_t dest, direction d) {
     ds[q] = UP;
     for (int i = 0; i < 4; i++) {
       point_t l = direct_point(p, ds[i]); 
-      if (!out_bounds(p, ds[i]) && !intersects(*snake, l)) {
+      if (!out_bounds(p, ds[i]) && ((!point_equal(p, start) && point_equal(l, dest)) || !intersects(*snake, l))) {
         if (!info[l.x][l.y].visited) {
           info[l.x][l.y].dist = info[p.x][p.y].dist + 1;
+          info[l.x][l.y].d = ds[i];
           info[l.x][l.y].parent = p;
           info[l.x][l.y].visited = true;
           queue_enqueue(queue, l);
@@ -132,6 +129,28 @@ result_t get_shortest_path(snake_t *snake, point_t dest, direction d) {
       }
     }
   }
+  return (result_t) { NULL, -1, LEFT };
+}
+
+result_t get_longest_path(snake_t *snake, point_t start, point_t point, direction d) {
+  result_t shortest = get_shortest_path(snake, start, point, d);
+  point_node_t *curr = shortest.queue->head;
+  while (curr->next != NULL) {
+    printf("K:\n");
+    //queue_print(shortest.queue);
+    result_t mini = get_shortest_path(shortest.queue, curr->point, curr->next->point, shortest.d);
+    printf("Y: %i\n", mini.dist);
+    if (mini.dist != -1) {
+      //queue_print(mini.queue);
+    }
+    if (mini.dist == -1) {
+      curr = curr->next;
+    } else {
+      mini.queue->tail->next = curr->next->next;
+      curr->next = mini.queue->head->next;
+    }
+  }
+  return shortest;
 }
 
 void queue_test() {
@@ -150,7 +169,8 @@ void queue_test() {
 int main(int argc, char* argv[]) {
   snake_t *snake = create_snake();
   point_t p = {10, 10};
-  result_t res = get_shortest_path(snake, p, RIGHT);
+  //result_t res = get_shortest_path(snake, snake->tail->point, p, RIGHT);
+  result_t res = get_longest_path(snake, snake->tail->point, p, RIGHT);
   printf("Ended\n");
   queue_print(res.queue);
   return EXIT_SUCCESS;

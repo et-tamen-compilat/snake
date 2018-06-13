@@ -35,6 +35,9 @@ typedef struct {
   uint8_t length;
 } snake_t;
 
+typedef node_t point_node_t;
+typedef snake_t queue_t;
+
 typedef enum {
   UP,
   DOWN,
