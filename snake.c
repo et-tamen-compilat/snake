@@ -64,7 +64,6 @@ point_t get_food(snake_t *snake) {
   return point;
 }
 
-<<<<<<< HEAD
 colour_t get_default(int pos) {
   colour_t b = {255, 0, 0};
   return b;
