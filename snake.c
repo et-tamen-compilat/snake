@@ -111,7 +111,7 @@ void draw_map(struct LedCanvas *canvas, colour_t *c) {
 
 }
 
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food) {
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
   led_canvas_clear(canvas);
   node_t *current = s->head;
   int len = 0;
@@ -130,7 +130,9 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
 //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
-  led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
+  if (k % 10 == 0) {
+    led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
+  }
 }
 
 // applies movement of one space to point in direction 
@@ -270,24 +272,28 @@ int main(int argc, char **argv) {
    * display. Installing signal handlers for defined exit is a good idea.
    */
   int multiplier = 5;
-  draw_snake(offscreen_canvas, snake, &multicolour, food);
+  draw_snake(offscreen_canvas, snake, &multicolour, food, 0);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
   struct input_event *garbage = malloc(sizeof(struct js_event)*5);
-  long time = getMilliseconds() + INTERVAL;
+  long time = getMilliseconds() + (INTERVAL / 10);
+  int k = 0;
   while (true) {
     int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
     if (poll_res == 0) {
+      k++;
       printf("Timed out %ld\n", getMilliseconds());
-      if (perform_move(snake, d, &food)) {
-        draw_snake(offscreen_canvas, snake, &multicolour, food);
-        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-        time += INTERVAL * multiplier;
-        continue;
-      } else {
-        break;
-      }
+
+      if (k % 10 == 9) {
+        if (!perform_move(snake, d, &food)) {
+          break;
+        }
+      } 
+      draw_snake(offscreen_canvas, snake, &multicolour, food, k);
+      offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+      time += (INTERVAL / 10) * multiplier;
+      continue;
     }  
     struct js_event e;
     read(fd, &e, sizeof(struct js_event));
