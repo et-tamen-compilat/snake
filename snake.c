@@ -26,6 +26,15 @@ bool out_bounds(point_t p, direction d){
       );
 }
 
+bool illegal_direction(point_t p, direction curr_d, direction new_d) {
+  return (
+      (curr_d == RIGHT && new_d == LEFT) ||
+      (curr_d == LEFT && new_d == RIGHT) ||
+      (curr_d == UP && new_d == DOWN) ||
+      (curr_d == DOWN && new_d == UP)
+      );
+}
+
 //Checks to see if two nodes are equal
 bool node_equal(node_t n1, node_t n2){
   return (point_equal(n1.point, n2.point) && n1.next == n2.next);
@@ -78,7 +87,7 @@ bool perform_move(snake_t *snake, direction d) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
   }
-//  printf("%p\n", snake->head);
+  //  printf("%p\n", snake->head);
   snake->head = snake->head->next;
   point_t p = direct_point(snake->tail->point, d);
   if (intersects(*snake, p)) {
@@ -107,6 +116,8 @@ snake_t *create_snake(){
   s->tail = tail;
   return s;
 }
+
+
 
 input input_init(struct input_event e) {
   input i;
@@ -169,16 +180,17 @@ int main(int argc, char **argv) {
   colour->r = 255;
   colour->g = colour->b = 0;
   direction d = RIGHT;
-/*  for (int i = 0; i < 1000; i++) {
-    draw_snake(offscreen_canvas, snake, colour);
-    
-    offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-  }*/
+  /*  for (int i = 0; i < 1000; i++) {
+      draw_snake(offscreen_canvas, snake, colour);
+
+      offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+      }*/
 
   /*
    * Make sure to always call led_matrix_delete() in the end to reset the
    * display. Installing signal handlers for defined exit is a good idea.
    */
+  int multiplier = 5;
   draw_snake(offscreen_canvas, snake, colour);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/by-id/usb-0810_usb_gamepad-event-joystick", O_RDONLY);
@@ -192,7 +204,7 @@ int main(int argc, char **argv) {
       if (perform_move(snake, d)) {
         draw_snake(offscreen_canvas, snake, colour);
         offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-        time += INTERVAL;
+        time += INTERVAL * multiplier;
         continue;
       } else {
         break;
@@ -210,11 +222,19 @@ int main(int argc, char **argv) {
       read(fd, garbage, sizeof(struct input_event));
       read(fd, garbage, sizeof(struct input_event));
       read(fd, garbage, sizeof(struct input_event));
-      d = i;
+      if (!(illegal_direction(snake->tail->point, d, i))) {
+        d = i;
+      }
     }
     // A, B or Select command
     else {
       read(fd, garbage, sizeof(struct input_event)*5);
+    }
+    //Changes speed of snake
+    if (i = I_B && multiplier > 1) {
+      multiplier--;
+    } else if (i = I_A && multiplier < 10) {
+      multiplier++;
     }
     printf("%i %i %i\n", e.type, e.code, e.value);
   }

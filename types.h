@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #define MAXHEIGHT 32
 #define MAXWIDTH 32
-#define INTERVAL 500 
+#define INTERVAL 100 
 
 typedef struct {
  uint8_t x;
