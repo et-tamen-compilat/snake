@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <linux/input.h>
+#include <linux/joystick.h>
 #include <poll.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -123,25 +123,29 @@ snake_t *create_snake(){
   return s;
 }
 
-input input_init(struct input_event e) {
+
+input input_init(struct js_event e) {
   input i = 10;
-  if (e.type == 3 && e.code == 1 && e.value == 0) {
+  if (e.value == -32767 && e.type == 2 && e.number == 1) {
     i = I_UP;
-  } else if (e.type == 3 && e.code == 1 && e.value == 255) {
+  } else if (e.value == 32767 && e.type == 2 && e.number == 1) {
     i = I_DOWN;
-  } else if (e.type == 3 && e.code == 0 && e.value == 0) {
+  } else if (e.value == -32767 && e.type == 2 && e.number == 0) {
     i = I_LEFT;
-  } else if (e.type == 3 && e.code == 0 && e.value == 255) {
+  } else if (e.value == 32767 && e.type == 2 && e.number == 0) {
     i = I_RIGHT;
-  } else if (e.value == 589826) {
+  } else if (e.value == 1 && e.type == 1 && e.number == 1) {
     i = I_A;
-  } else if (e.value == 589825) {
+  } else if (e.value == 1 && e.type == 1 && e.number == 0) {
     i = I_B;
-  } else if (e.value == 589833) {
+  } else if (e.value == 1 && e.type == 1 && e.number ==8) {
     i = I_SELECT;
+//  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
+//    i = I_START;
   } else {
     printf("Invalid input event value: %i\n", e.value);
   }
+
   return i;
 }
 
@@ -197,9 +201,9 @@ int main(int argc, char **argv) {
    */
   draw_snake(offscreen_canvas, snake, colour, food);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-  int fd = open("/dev/input/by-id/usb-0810_usb_gamepad-event-joystick", O_RDONLY);
+  int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
-  struct input_event *garbage = malloc(sizeof(struct input_event)*5);
+  struct input_event *garbage = malloc(sizeof(struct js_event)*5);
   long time = getMilliseconds() + INTERVAL;
   while (true) {
     int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
@@ -214,16 +218,16 @@ int main(int argc, char **argv) {
         break;
       }
     }  
-    struct input_event e;
-    read(fd, &e, sizeof(struct input_event));
+    struct js_event e;
+    read(fd, &e, sizeof(struct js_event));
     input i = input_init(e);
     // Saves input direction
-    if (i >= 0 && i <= 3) {
-      d = i;
-      read(fd, garbage, sizeof(struct input_event));
-      read(fd, garbage, sizeof(struct input_event));
-      read(fd, garbage, sizeof(struct input_event));
-      printf("D: %i\n", d);
+    if (i != 10) {
+      read(fd, garbage, sizeof(struct js_event));
+      if (i >= 0 && i <= 3) {
+        d = i;
+        printf("D: %i\n", d);
+      }
     }
 //    printf("D: %i\n", i);
     // Skips next 3 or 5 input events depending on command
@@ -238,7 +242,8 @@ int main(int argc, char **argv) {
     /*else {
       read(fd, garbage, sizeof(struct input_event)*5);
     }*/
-    printf("%i %i %i\n", e.type, e.code, e.value);
+    //printf("%i %i %i\n", e.type, e.code, e.value);
+    printf("%i %i %i\n", e.value, e.type, e.number);
   }
   free(garbage);
   led_matrix_delete(matrix);
