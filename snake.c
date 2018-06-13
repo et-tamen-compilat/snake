@@ -99,6 +99,7 @@ direction get_rand_dir() {
   }
 }
 
+// Makes sure the wall doesn't go off of the map
 int calc_length(point_t start, direction d) {
   switch (d) {
     case UP: 
@@ -168,6 +169,12 @@ wall_t *create_map() {
     }
   }
   return wall_arr;
+}
+
+//Check map for food, check it's not on top of a wall basically
+//In main, put this in a while look when generating food
+bool food_wall(food_t food, int **collision_map){
+  return (collision_map[food.point.x][food.point.y]);
 }
 
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k) {
