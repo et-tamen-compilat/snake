@@ -8,8 +8,18 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <signal.h>
 #include "types.h"
 #include "led-matrix-c.h"
+
+volatile sig_atomic_t done = 0;
+volatile struct RGBLedMatrix *matrix;
+
+void term(int signum) {
+  printf("Hello\n");
+//  led_matrix_delete(matrix);
+  done = 1;
+}
 
 int TIME_AFTER_DEATH = -1;
 //Checks to see if two points are equal
@@ -338,8 +348,12 @@ static long getMilliseconds() {
 #define MAX(a, b) (a < b ? b : a)
 
 int main(int argc, char **argv) {
+  struct sigaction action;
+  memset(&action, 0, sizeof(struct sigaction));
+  action.sa_handler = &term;
+  sigaction(SIGINT, &action, NULL);
+  
   struct RGBLedMatrixOptions options;
-  struct RGBLedMatrix *matrix;
   struct LedCanvas *offscreen_canvas;
   int width, height;
   int x, y, i;
@@ -427,7 +441,7 @@ int main(int argc, char **argv) {
     poll(NULL, 0, INTERVAL);
   }    
 
-  while(1);
+  while(!done);
 
   free(garbage);
   led_matrix_delete(matrix);
