@@ -20,9 +20,9 @@ bool point_equal(point_t p1, point_t p2){
 bool out_bounds(point_t p, direction d){
   return (
       (p.y == 0 && d == UP) ||
-      (p.y == MAXHEIGHT - 1 && d == DOWN) ||
+      (p.y == MAX_HEIGHT - 1 && d == DOWN) ||
       (p.x == 0 && d == LEFT) ||
-      (p.x == MAXWIDTH - 1 && d == RIGHT)
+      (p.x == MAX_WIDTH - 1 && d == RIGHT)
       );
 }
 
@@ -53,7 +53,16 @@ bool intersects(snake_t s, point_t p){
   return false;
 }
 
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c) {
+point_t get_food(snake_t *snake) {
+  point_t point;
+  do {
+    point.x = rand() % MAX_WIDTH;
+    point.y = rand() % MAX_HEIGHT;
+  } while(intersects(*snake, point));
+  return point;
+}
+
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c, point_t food) {
   led_canvas_clear(canvas);
   node_t *current = s->head;
   while (current != NULL) {
@@ -62,6 +71,7 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_t *c) {
     led_canvas_set_pixel(canvas, p->x, p->y, c->r, c->g, c->b);
     current = current->next;
   }
+  led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
 }
 
 // applies movement of one space to point in direction 
@@ -83,20 +93,27 @@ point_t direct_point(point_t p, direction d){
   return p;
 }
 
-bool perform_move(snake_t *snake, direction d) {
+bool perform_move(snake_t *snake, direction d, point_t* food) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
   }
   //  printf("%p\n", snake->head);
   snake->head = snake->head->next;
   point_t p = direct_point(snake->tail->point, d);
-  if (intersects(*snake, p)) {
-    return false;
-  }
+  bool eq = point_equal(*food, p);
+  if (!eq) {
+    snake->head = snake->head->next;
+    if (intersects(*snake, p)) {
+      return false;
+    } 
+  } 
   node_t *nova = malloc(sizeof(node_t));
   *nova = (node_t) { p, NULL };
   snake->tail->next = nova;
   snake->tail = nova;
+  if (eq) {
+    *food = get_food(snake);
+  }
   return true;
 }
 
@@ -120,7 +137,7 @@ snake_t *create_snake(){
 
 
 input input_init(struct input_event e) {
-  input i;
+  input i = 10;
   if (e.type == 3 && e.code == 1 && e.value == 0) {
     i = I_UP;
   } else if (e.type == 3 && e.code == 1 && e.value == 255) {
@@ -176,6 +193,7 @@ int main(int argc, char **argv) {
    */
   //snake_t *snake = malloc(sizeof(snake));
   snake_t *snake = create_snake();
+  point_t food = get_food(snake);
   colour_t *colour = malloc(sizeof(colour));
   colour->r = 255;
   colour->g = colour->b = 0;
@@ -191,7 +209,7 @@ int main(int argc, char **argv) {
    * display. Installing signal handlers for defined exit is a good idea.
    */
   int multiplier = 5;
-  draw_snake(offscreen_canvas, snake, colour);
+  draw_snake(offscreen_canvas, snake, colour, food);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/by-id/usb-0810_usb_gamepad-event-joystick", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
@@ -201,8 +219,8 @@ int main(int argc, char **argv) {
     int poll_res = poll(&p, 1, (int) MAX(time - getMilliseconds(), 0));
     if (poll_res == 0) {
       printf("Timed out %ld\n", getMilliseconds());
-      if (perform_move(snake, d)) {
-        draw_snake(offscreen_canvas, snake, colour);
+      if (perform_move(snake, d, &food)) {
+        draw_snake(offscreen_canvas, snake, colour, food);
         offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
         time += INTERVAL * multiplier;
         continue;
@@ -211,25 +229,19 @@ int main(int argc, char **argv) {
       }
     }  
     struct input_event e;
-    input i;
     read(fd, &e, sizeof(struct input_event));
+    input i = input_init(e);
     // Saves input direction
-    i = input_init(e);
-    printf("%i\n", i);
-    // Skips next 3 or 5 input events depending on command
-    // Direction command
-    if (e.type == 3) {
-      read(fd, garbage, sizeof(struct input_event));
-      read(fd, garbage, sizeof(struct input_event));
-      read(fd, garbage, sizeof(struct input_event));
+    if (i >= 0 && i <= 3) {
       if (!(illegal_direction(snake->tail->point, d, i))) {
         d = i;
       }
+      read(fd, garbage, sizeof(struct input_event));
+      read(fd, garbage, sizeof(struct input_event));
+      read(fd, garbage, sizeof(struct input_event));
+      printf("D: %i\n", d);
     }
     // A, B or Select command
-    else {
-      read(fd, garbage, sizeof(struct input_event)*5);
-    }
     //Changes speed of snake
     if (i = I_B && multiplier > 1) {
       multiplier--;
