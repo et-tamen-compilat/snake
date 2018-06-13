@@ -11,6 +11,7 @@
 #include "types.h"
 #include "led-matrix-c.h"
 
+int TIME_AFTER_DEATH = -1;
 //Checks to see if two points are equal
 bool point_equal(point_t p1, point_t p2){
   return (p1.x == p2.x && p1.y == p2.y);
@@ -65,7 +66,7 @@ point_t get_food(snake_t *snake) {
 }
 
 colour_t get_default(int pos) {
-  colour_t b = {255, 0, 0};
+  colour_t b = {0, 255, 0};
   return b;
 }
 
@@ -99,6 +100,7 @@ direction get_rand_dir() {
   }
 }
 
+// Makes sure the wall doesn't go off of the map
 int calc_length(point_t start, direction d) {
   switch (d) {
     case UP: 
@@ -201,6 +203,12 @@ int **create_collision_map(wall_t *wall_arr) {
   return map; 
 }
 
+//Check map for food, check it's not on top of a wall basically
+//In main, put this in a while look when generating food
+bool food_wall(food_t food, int **collision_map){
+  return (collision_map[food.point.x][food.point.y]);
+}
+
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
   led_canvas_clear(canvas);
   for (int i = 0; i < NUM_WALLS; i++) {
@@ -219,12 +227,17 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
     //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     colour_t k = c(len - pos);
     pos++;
-    led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
-    //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
+    if (TIME_AFTER_DEATH >= pos) {
+      led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
+    }
+    else {
+      led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
+    }  
+//    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
-  if (k % 10 == 0) {
-    led_canvas_set_pixel(canvas, food.x, food.y, 0, 255, 0);
+  if (k % 10 == 0 && TIME_AFTER_DEATH == -1) {
+    led_canvas_set_pixel(canvas, food.x, food.y, 255, 0, 0);
   }
 }
 
@@ -267,6 +280,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food) {
   snake->tail = nova;
   if (eq) {
     *food = get_food(snake);
+    snake->length++;
   }
   return true;
 }
@@ -285,6 +299,7 @@ snake_t *create_snake(){
   *head = (node_t) {{0,0}, b1};
   s->head= head;
   s->tail = tail;
+  s->length = 5;
   return s;
 }
 
@@ -370,9 +385,9 @@ int main(int argc, char **argv) {
     if (poll_res == 0) {
       k++;
       printf("Timed out %ld\n", getMilliseconds());
-
       if (k % 10 == 9) {
         if (!perform_move(snake, d, &food)) {
+          TIME_AFTER_DEATH = 0;
           break;
         }
       } 
@@ -403,6 +418,12 @@ int main(int argc, char **argv) {
     }
     //printf("%i %i %i\n", e.type, e.code, e.value);
   }
+
+  for (int i = 0; i < snake->length; i++) {
+    draw_snake(offscreen_canvas, snake, &get_default, food, k, walls);
+      TIME_AFTER_DEATH++;
+  }    
+
   free(garbage);
   led_matrix_delete(matrix);
   return EXIT_SUCCESS;
