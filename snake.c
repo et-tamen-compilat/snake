@@ -72,7 +72,9 @@ bool intersects(snake_t s, point_t p){
 }
 
 void add_wall_to_map(int **map, wall_t *wall) {
+  printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
   for (int i = 0; i < wall->length; i++) {
+  printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
     switch (wall->direction) {
       case UP: 
         map[wall->start.x][wall->start.y - i] = 1;
@@ -171,7 +173,7 @@ wall_t *create_wall() {
   wall->length = get_rand_int(WALL_MIN_LEN, WALL_MAX_LEN);
   wall->direction = get_rand_dir();
 
-  int x = MAX_WIDTH, y = MAX_HEIGHT;
+  int x = MAX_WIDTH - 1, y = MAX_HEIGHT - 1;
   switch (wall->direction) {
     case RIGHT: x -= wall->length;
     case DOWN: y -= wall->length;
