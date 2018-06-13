@@ -56,12 +56,12 @@ bool intersects(snake_t s, point_t p){
   return false;
 }
 
-point_t get_food(snake_t *snake) {
+point_t get_food(snake_t *snake, wall_t* wall_arr) {
   point_t point;
   do {
     point.x = rand() % MAX_WIDTH;
     point.y = rand() % MAX_HEIGHT;
-  } while(intersects(*snake, point));
+  } while(intersects(*snake, point) || food_wall(point, create_collision_map(wall_arr));
   return point;
 }
 
@@ -205,8 +205,8 @@ int **create_collision_map(wall_t *wall_arr) {
 
 //Check map for food, check it's not on top of a wall basically
 //In main, put this in a while look when generating food
-bool food_wall(food_t food, int **collision_map){
-  return (collision_map[food.point.x][food.point.y]);
+bool food_wall(point_t point, int **collision_map){
+  return (collision_map[point.x][point.y]);
 }
 
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
@@ -261,7 +261,7 @@ point_t direct_point(point_t p, direction d){
   return p;
 }
 
-bool perform_move(snake_t *snake, direction d, point_t* food) {
+bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
   }
@@ -280,7 +280,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food) {
   snake->tail->next = nova;
   snake->tail = nova;
   if (eq) {
-    *food = get_food(snake);
+    *food = get_food(snake, walls);
     snake->length++;
   }
   return true;
@@ -363,7 +363,6 @@ int main(int argc, char **argv) {
    * iteration.
    */
   snake_t *snake = create_snake();
-  point_t food = get_food(snake);
   colour_t *colour = malloc(sizeof(colour));
   colour->r = 255;
   colour->g = colour->b = 0;
@@ -374,6 +373,7 @@ int main(int argc, char **argv) {
    */
   int multiplier = 5;
   wall_t *walls = create_map();
+  point_t food = get_food(snake, walls);
   draw_snake(offscreen_canvas, snake, &multicolour, food, 0, walls);
   offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
   int fd = open("/dev/input/js0", O_RDONLY);
@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
       k++;
       printf("Timed out %ld\n", getMilliseconds());
       if (k % 10 == 9) {
-        if (!perform_move(snake, d, &food)) {
+        if (!perform_move(snake, d, &food, walls)) {
           TIME_AFTER_DEATH = 0;
           break;
         }
