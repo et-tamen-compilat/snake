@@ -317,6 +317,7 @@ int handle_pause(event_t event, state_t *state) {
     case I_INIT:
       stop_sound();
       play_sound(6);
+      sleep(1);
     case I_UP:
       state->selection = 0;
       break;
