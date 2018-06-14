@@ -16,6 +16,8 @@
 bool out_bounds(point_t p, direction d);
 bool intersects(snake_t s, point_t p);
 bool point_equal(point_t p1, point_t p2);
+point_t direct_point(point_t p, direction d);
+snake_t *create_snake();
 
 #define NUM_WALLS 20
 volatile sig_atomic_t done = 0;
@@ -237,25 +239,6 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
   }
 }
 
-// applies movement of one space to point in direction 
-point_t direct_point(point_t p, direction d){
-  switch (d){
-    case UP:
-      p.y = p.y - 1;
-      break;
-    case DOWN:
-      p.y = p.y + 1;
-      break;
-    case LEFT:
-      p.x = p.x - 1;
-      break;
-    case RIGHT:
-      p.x = p.x + 1;
-      break;
-  }
-  return p;
-}
-
 bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
@@ -263,6 +246,18 @@ bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   //  printf("%p\n", snake->head);
   //  snake->head = snake->head->next;
   point_t p = direct_point(snake->tail->point, d);
+  for (int i = 0; i < NUM_WALLS; i++) {
+    point_t point = walls[i].start;
+    for (int j = 0; j < walls[i].length; j++) {
+      if (point_equal(point, p)) {
+        return false;
+      }
+      switch (walls[i].direction) {
+        case DOWN: point.y++; break;
+        case RIGHT: point.x++; break;
+      }
+    }
+  }
   bool eq = point_equal(*food, p);
   if (!eq) {
     snake->head = snake->head->next;
