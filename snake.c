@@ -146,11 +146,53 @@ void draw_rectangle(struct LedCanvas *canvas, colour_t c, int x0, int y0, int x1
 void draw_pause_screen(struct LedCanvas *canvas, struct LedFont *font) {
   led_canvas_clear(canvas);
   colour_t blue = {0,0,255};
-  draw_text(canvas, font, 3, 3, 0, 0, 255, "PAUSED", 1);
-  draw_rectangle(canvas, blue, 2, 10, 30, 18);
-  draw_text(canvas, font, 4, 12, 0, 0, 255, "RESUME", 1);
-  draw_rectangle(canvas, blue, 2, 20, 30, 28);
-  draw_text(canvas, font, 4, 22, 0, 0, 255, "QUIT", 1);
+  colour_t red = {255,0,0};
+  draw_text(canvas, font, 5, 7, 0,0,255, "PAUSED", 0);
+  draw_rectangle(canvas, blue, 2, 9, 30, 19);
+  draw_text(canvas, font, 5, 17, 0, 0, 255, "RESUME", 0);
+  draw_rectangle(canvas, blue, 2, 21, 30, 30);
+  draw_text(canvas, font, 9, 28, 0, 0, 255, "QUIT", 0);
+}
+
+void draw_menu_screen(struct LedCanvas *canvas, struct LedFont *font) {
+  led_canvas_clear(canvas);
+  colour_t blue = {0,0,255};
+  colour_t red = {255,0,0};
+  colour_t test = {68, 180, 244};
+  draw_text(canvas, font, 3,8, 68,180,244, "CLASSIC", 0);
+  //draw_rectangle(canvas, blue, 1, 1, 31, 9);
+  draw_text(canvas, font, 6, 17, 68, 180, 244, "CRAZY", 0);
+  //draw_rectangle(canvas, blue, 2, 10, 29, 18);
+  draw_text(canvas, font, 3, 26, 68, 180, 244, "AI", 0);
+  //draw_rectangle(canvas, blue, 1, 19, 11, 27);
+  draw_text(canvas, font, 14, 26, 244, 173, 31, "MAZE", 0);
+  draw_rectangle(canvas,test, 12, 19, 30, 27);
+}
+
+
+void draw_score_screen(struct LedCanvas *canvas, struct LedFont *font) {
+  led_canvas_clear(canvas);
+  const char *bdf_font_file = "./5x7.bdf";
+  struct LedFont *font2 = load_font(bdf_font_file);
+  char *score = "228";
+  colour_t blue = {0,0,255};
+  colour_t red = {255,0,0};
+  colour_t test = {68, 180, 244};
+  draw_text(canvas, font2, 4, 13, 68, 180, 244, "SCORE", 0);
+  draw_text(canvas, font2, 9, 24, 68, 180, 244, score, 0);  
+}
+
+void draw_retry_screen(struct LedCanvas *canvas, struct LedFont *font) {
+  led_canvas_clear(canvas);
+  const char *bdf_font_file = "./5x8.bdf";
+  struct LedFont *font2 = load_font(bdf_font_file);
+  char *score = "228";
+  colour_t blue = {0,0,255};
+  colour_t red = {255,0,0};
+  colour_t test = {68, 180, 244};
+  draw_text(canvas, font, 5, 12, 68, 180, 244, "RETRY?", 0);
+  draw_text(canvas, font2, 8, 25, 68, 180, 244, "Y", 0);
+  draw_text(canvas, font2, 20, 25, 68, 180, 244, "N", 0);
 }
 
 static long get_milliseconds() {
@@ -172,7 +214,7 @@ int main(int argc, char **argv) {
   int width, height;
   int x, y, i;
   srand(time(NULL));
-  const char *bdf_font_file = "./5x7.bdf";
+  const char *bdf_font_file = "./4x6.bdf";
   struct LedFont *font = load_font(bdf_font_file);
   
 //  srand(45);
@@ -259,7 +301,7 @@ int main(int argc, char **argv) {
     if (i == I_START) {
       paused = !paused;
       if (paused) {
-        draw_pause_screen(offscreen_canvas, font);
+        draw_retry_screen(offscreen_canvas, font);
         offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
       }
 /*      while (paused) {
