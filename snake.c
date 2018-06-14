@@ -30,6 +30,7 @@ void term(int signum) {
 }
 
 int TIME_AFTER_DEATH = -1;
+
 //Checks to see if two points are equal
 // Returns true if will be out of bounds
 bool illegal_direction(direction curr_d, direction new_d) {
@@ -46,10 +47,11 @@ bool node_equal(node_t n1, node_t n2){
   return (point_equal(n1.point, n2.point) && n1.next == n2.next);
 }
 
-
+// Checks if food is placed in a wall
 bool food_wall(point_t point, int **collision_map){
   return (collision_map[point.x][point.y]);
 }
+
 void add_wall_to_map(int **map, wall_t *wall) {
   printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
   for (int i = 0; i < wall->length; i++) {
@@ -94,11 +96,13 @@ point_t get_food(snake_t *snake, wall_t* wall_arr) {
   return point;
 }
 
+// Default green colour for the snake
 colour_t get_default(int pos) {
   colour_t b = {0, 255, 0};
   return b;
 }
 
+// Multi-coloured snake variation
 colour_t colours[] = {
   { 255, 0, 0 },
   { 0, 0, 255 },
@@ -113,7 +117,7 @@ colour_t multicolour(int pos) {
   return colours[pos % 7];
 }
 
-//returns random int in range
+// Returns random int in range
 int get_rand_int(int min, int max) {
   return rand() % (max + 1 - min) + min;
 }
