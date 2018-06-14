@@ -7,6 +7,7 @@
 #define WALL_MIN_LEN 3
 #define WALL_COLOUR (colour_t){216, 150, 18}
 #define SNAKE_SAFETY (point_t){10, 4}
+#define NUM_WALLS 0
 
 typedef struct {
  uint8_t x;
@@ -59,7 +60,8 @@ typedef enum {
   I_RIGHT,
   I_A,
   I_B,
-  I_SELECT
+  I_SELECT,
+  I_START  
 } input; 
 
 typedef colour_t colour_function_t(int);
