@@ -258,6 +258,13 @@ void play_sound(int i){
     printf("I am the parent\n");
     wait();
   } 
+  return;
+}
+
+//Stops sound
+void stop_sound(){
+  system("killall omxplayer.bin");
+  return;
 }
 
 #define MAX(a, b) (a < b ? b : a)
