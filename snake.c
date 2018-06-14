@@ -292,8 +292,8 @@ input input_init(struct js_event e) {
     i = I_B;
   } else if (e.value == 1 && e.type == 1 && e.number ==8) {
     i = I_SELECT;
-    //  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
-    //    i = I_START;
+  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
+    i = I_START;
 } else {
   printf("Invalid input event value: %i\n", e.value);
 }
