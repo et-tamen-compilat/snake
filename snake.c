@@ -77,9 +77,9 @@ wall_t *create_map() {
         wall_arr[i] = *wall;
         free(wall);
       } else {
-        printf("P1\n");
+        //printf("P1\n");
         free(wall);
-        printf("P2\n");
+        //printf("P2\n");
       }
     }
   }
@@ -106,7 +106,7 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
     //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     colour_t k = c(len - pos);
     pos++;
-    printf("%i %i %i\n", TIME_AFTER_DEATH, pos, TIME_AFTER_DEATH >= pos);
+    //printf("%i %i %i\n", TIME_AFTER_DEATH, pos, TIME_AFTER_DEATH >= pos);
     if (TIME_AFTER_DEATH >= (len - pos)) {
       led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     }
@@ -116,6 +116,7 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
 //    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
+  //printf("%i %i\n", k, TIME_AFTER_DEATH);
   if (k % 10 == 0 && TIME_AFTER_DEATH == -1) {
     led_canvas_set_pixel(canvas, food.x, food.y, 255, 0, 0);
   }
@@ -242,7 +243,8 @@ void play_sound(int i){
         execlp("/usr/bin/omxplayer", " ", "-o", "local",  "--loop", "/home/pi/arm11_24/snake/sounds/menu.m4a", NULL);
         break;
       case 4:
-        execlp("/usr/bin/aplay", " ", "/home/pi/arm11_24/snake/sounds/eat.wav", NULL);
+//        execlp("/usr/bin/aplay", " ", "/home/pi/arm11_24/snake/sounds/eat.wav", NULL);
+        system("aplay /home/pi/arm11_24/snake/sounds/eat.wav");
         break;
       case 5:
         execlp("/usr/bin/omxplayer", " ", "-o", "local", "/home/pi/arm11_24/snake/sounds/die.wav", NULL);
@@ -276,16 +278,17 @@ int handle_main(event_t event, state_t *state) {
       play_sound(1);
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % 10 == 9) {
+        //state->d = get_direction(state->snake, state->food, state->d);
         if (!perform_move(state->snake, state->d, &state->food, state->walls)) {
           stop_sound();
           play_sound(5);
-          return 5;
           TIME_AFTER_DEATH = 0;
+          return 5;
         }
-        draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls);
-        state->offscreen_canvas 
-          = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       }
+      draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls);
+      state->offscreen_canvas 
+          = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
     case I_LEFT:
     case I_RIGHT:
@@ -352,9 +355,8 @@ int handle_death_throes(event_t event, state_t *state) {
       if (event.k % 10 != 0) {
         return EVENT_REMAIN;
       }
-      printf("Here %i %i\n", TIME_AFTER_DEATH, state->snake->length);
       if (TIME_AFTER_DEATH == state->snake->length) {
-        printf("Flash\n");
+        //printf("Flash\n");
         return 3;
       } else {
         draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls);
@@ -377,7 +379,7 @@ int handle_score(event_t event, state_t *state) {
       state->offscreen_canvas = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
     case I_TIMEOUT:
-      printf("Kid Flash: %i\n", event.k);
+      //printf("Kid Flash: %i\n", event.k);
       if (event.k == 20) {
         return 4;
       }
@@ -388,7 +390,7 @@ int handle_score(event_t event, state_t *state) {
 }
 
 int handle_menu(event_t event, state_t *state) {
-  printf("H: %i\n", event.type);
+  //printf("H: %i\n", event.type);
   switch (event.type) {
     case I_TIMEOUT:
       if (event.k != 0) {
@@ -471,7 +473,7 @@ void run_event_system(event_system_t system, void *initial) {
   int k = 0;
   int debug = 0;
   while (!done) {
-//    printf("Here: %i\n", debug);
+    //printf("Here: %i\n", done);
     int poll_res = poll(&p, 1, (int) MAX(curr_time - get_milliseconds(), 0));
  //   printf("Here3: %i\n", debug);
     int index;
@@ -513,6 +515,7 @@ void run_event_system(event_system_t system, void *initial) {
   free(garbage);
   return;
 } 
+
 int main(int argc, char **argv) {
   struct sigaction action;
   memset(&action, 0, sizeof(struct sigaction));
