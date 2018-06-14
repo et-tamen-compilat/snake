@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 #include "types.h"
 #include "led-matrix-c.h"
 
