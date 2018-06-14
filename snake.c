@@ -213,7 +213,7 @@ void play_sound(int i){
     printf("I am the child\n");
     switch(i){
       case 1:
-        execlp("/usr/bin/omxplayer", " ",  "arm11_24/snake/sounds/classic.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ", "-o", "local",  "--loop", "arm11_24/snake/sounds/classic.m4a", NULL);
         break;
       case 2:
         execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/crazy.m4a", NULL);
