@@ -250,7 +250,7 @@ void play_sound(int i){
         execlp("/usr/bin/omxplayer", " ", "-o", "local", "/home/pi/arm11_24/snake/sounds/die.wav", NULL);
         break;
       case 6:
-        execlp("/usr/bin/omxplayer", " ", "-o", "local", "/home/pi/arm11_24/snake/sounds/pause.wav", NULL);
+        execlp("aplay /home/pi/arm11_24/snake/sounds/pause.wav");
         break;
     }
     _exit(0);
@@ -320,7 +320,6 @@ int handle_pause(event_t event, state_t *state) {
     case I_INIT:
       stop_sound();
       play_sound(6);
-      sleep(1);
     case I_UP:
       state->selection = 0;
       break;
