@@ -335,12 +335,14 @@ int handle_score(event_t event, state_t *state) {
 }
 
 int handle_menu(event_t event, state_t *state) {
-  //printf("H: %i\n", event.type);
+  printf("H: %i\n", event.type);
   switch (event.type) {
     case I_TIMEOUT:
-      if (event.k == 0) {
-        state->selection = 0;
+      if (event.k != 0) {
+        break;
       }
+    case I_INIT:
+      state->selection = 0;
       break;
     case I_DOWN:
       if (state->selection < 3) {
@@ -360,6 +362,7 @@ int handle_menu(event_t event, state_t *state) {
       if (event.k != 0) {
         return EVENT_REMAIN;
       }
+    case I_INIT:
     case I_UP:
     case I_DOWN:
       //printf("J: %i\n", state->selection);
