@@ -7,6 +7,7 @@
 #define WALL_MIN_LEN 3
 #define WALL_COLOUR (colour_t){216, 150, 18}
 #define SNAKE_SAFETY (point_t){10, 4}
+#define NUM_WALLS 20
 
 typedef struct {
  uint8_t x;
