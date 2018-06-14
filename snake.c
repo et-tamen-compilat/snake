@@ -300,6 +300,22 @@ input input_init(struct js_event e) {
 return i;
 }
 
+void draw_rectangle(struct LedCanvas *canvas, Colour *c, int x0, int y0, int x1, int y1) {
+  draw_line(canvas, x0, y0, x1, y0, c->r, c->g, c->b);
+  draw_line(canvas, x0, y0, x0, y1, c->r, c->g, c->b);
+  draw_line(canvas, x0, y1, x1, y1, c->r, c->g, c->b);
+  draw_line(canvas, x1, y0, x1, y1, c->r, c->g, c->b);
+}
+
+void draw_pause_screen(struct LedCanvas *canvas, struct LedFont *font) {
+  Colour blue = {0,0,255};
+  draw_text(canvas, font, 3, 3, 0, 0, 255, "PAUSED", 1);
+  draw_rectangle(canvas, blue, 2, 10, 30, 18);
+  draw_text(canvas, font, 4, 12, 0, 0, 255, "RESUME", 1);
+  draw_rectangle(canvas, blue, 2, 20, 30, 28);
+  draw_text(canvas, font, 4, 22, 0, 0, 255, "QUIT", 1);
+}
+
 static long getMilliseconds() {
   struct timeval t;
   gettimeofday(&t, NULL); 
@@ -319,6 +335,8 @@ int main(int argc, char **argv) {
   int width, height;
   int x, y, i;
   srand(time(NULL));
+  const char *bdf_font_file = "./5x7.bdf";
+  Font font = LoadFont(bdf_font_file);
   
 //  srand(45);
 
@@ -394,6 +412,10 @@ int main(int argc, char **argv) {
       multiplier--;
     } else if (i == I_B && multiplier < 10) {
       multiplier++;
+    }
+
+    if (i == I_START) {
+      draw_pause_screen(canvas, font);
     }
     //printf("%i %i %i\n", e.type, e.code, e.value);
   }
