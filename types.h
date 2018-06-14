@@ -7,7 +7,7 @@
 #define WALL_MIN_LEN 3
 #define WALL_COLOUR (colour_t){216, 150, 18}
 #define SNAKE_SAFETY (point_t){10, 4}
-#define NUM_WALLS 0
+#define NUM_WALLS 20
 
 typedef struct {
  uint8_t x;
@@ -61,7 +61,36 @@ typedef enum {
   I_A,
   I_B,
   I_SELECT,
-  I_START  
+  I_START,
+  I_TIMEOUT,
+  I_INIT
 } input; 
+
+typedef struct {
+  snake_t *snake;
+  direction d;
+  struct LedCanvas *offscreen_canvas;
+  int multiplier;
+  wall_t *walls;
+  point_t food;
+  int selection;
+} state_t;
+
+typedef struct {
+  input type;
+  int k;
+} event_t;
+
+typedef int event_handler_t(event_t event, state_t *state);
+// -1 means exit
+// -2 means stay the same
+
+#define EVENT_EXIT -1
+#define EVENT_REMAIN -2
+
+typedef struct {
+  event_handler_t **handlers;
+  void *state;
+} event_system_t;
 
 typedef colour_t colour_function_t(int);
