@@ -192,7 +192,9 @@ void draw_retry_screen(struct LedCanvas *canvas, struct LedFont *font) {
   colour_t test = {68, 180, 244};
   draw_text(canvas, font, 5, 12, 68, 180, 244, "RETRY?", 0);
   draw_text(canvas, font2, 8, 25, 68, 180, 244, "Y", 0);
+  draw_rectangle(canvas, test, 6, 17, 14, 26);
   draw_text(canvas, font2, 20, 25, 68, 180, 244, "N", 0);
+  draw_rectangle(canvas, test, 18, 26, 25, 17);
 }
 
 static long get_milliseconds() {
