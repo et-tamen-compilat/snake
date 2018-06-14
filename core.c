@@ -197,6 +197,8 @@ wall_t *create_wall() {
   return wall;
 }
 
+void play_sound(int i);
+
 bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
@@ -228,6 +230,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   snake->tail->next = nova;
   snake->tail = nova;
   if (eq) {
+    play_sound(4);
     *food = get_food(snake, walls);
     snake->length++;
   }
