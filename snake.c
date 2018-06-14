@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 #include "types.h"
 #include "led-matrix-c.h"
 
@@ -221,6 +222,49 @@ static long get_milliseconds() {
   struct timeval t;
   gettimeofday(&t, NULL); 
   return (t.tv_sec * 1000) + (t.tv_usec / 1000);
+}
+
+//Takes in a number corresponding to the sound to play
+void play_sound(int i){
+  int pid;
+  pid=fork();
+  if(pid==0)
+  {
+    printf("I am the child\n");
+    switch(i){
+      case 1:
+        execlp("/usr/bin/omxplayer", " ",  "arm11_24/snake/sounds/classic.m4a", NULL);
+        break;
+      case 2:
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/crazy.m4a", NULL);
+        break;
+      case 3:
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/menu.m4a", NULL);
+        break;
+      case 4:
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/eat.wav", NULL);
+        break;
+      case 5:
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/die.wav", NULL);
+        break;
+      case 6:
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/pause.wav", NULL);
+        break;
+    }
+    _exit(0);
+  }
+  else
+  {
+    printf("I am the parent\n");
+    wait();
+  } 
+  return;
+}
+
+//Stops sound
+void stop_sound(){
+  system("killall omxplayer.bin");
+  return;
 }
 
 #define MAX(a, b) (a < b ? b : a)
