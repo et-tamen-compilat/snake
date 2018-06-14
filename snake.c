@@ -253,6 +253,16 @@ int main(int argc, char **argv) {
 
     if (i == I_START) {
       draw_pause_screen(offscreen_canvas, font);
+      bool paused = true;
+      while (paused) {
+        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+        int selection = 0;
+        if (selection == 1) { //Resume game
+          paused = false;
+        } else if (selection == 2) { //Quit game
+          return EXIT_SUCCESS;
+        }
+      }
     }
     //printf("%i %i %i\n", e.type, e.code, e.value);
   }
