@@ -233,22 +233,22 @@ void play_sound(int i){
     printf("I am the child\n");
     switch(i){
       case 1:
-        execlp("/usr/bin/omxplayer", " ", "-o", "local",  "--loop", "arm11_24/snake/sounds/classic.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ", "-o", "local",  "--loop", "/home/pi/arm11_24/snake/sounds/classic.m4a", NULL);
         break;
       case 2:
-        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/crazy.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ", "/home/pi/arm11_24/snake/sounds/crazy.m4a", NULL);
         break;
       case 3:
-        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/menu.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ", "/home/pi/arm11_24/snake/sounds/menu.m4a", NULL);
         break;
       case 4:
-        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/eat.wav", NULL);
+        execlp("/usr/bin/omxplayer", " ", "/home/pi/arm11_24/snake/sounds/eat.wav", NULL);
         break;
       case 5:
-        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/die.wav", NULL);
+        execlp("/usr/bin/omxplayer", " ", "/home/pi/arm11_24/snake/sounds/die.wav", NULL);
         break;
       case 6:
-        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/pause.wav", NULL);
+        execlp("/usr/bin/omxplayer", " ", "/home/pi/arm11_24/snake/sounds/pause.wav", NULL);
         break;
     }
     _exit(0);
@@ -256,7 +256,7 @@ void play_sound(int i){
   else
   {
     printf("I am the parent\n");
-    wait();
+//    wait();
   } 
   return;
 }
@@ -272,6 +272,7 @@ void stop_sound(){
 int handle_main(event_t event, state_t *state) {
   switch (event.type) {
     case I_INIT:
+      play_sound(1);
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % 10 == 9) {
         if (!perform_move(state->snake, state->d, &state->food, state->walls)) {
