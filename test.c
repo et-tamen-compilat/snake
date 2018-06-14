@@ -205,6 +205,7 @@ void queue_test() {
   queue_print(queue);
 }
 
+/*
 int main(int argc, char* argv[]) {
   snake_t *snake = create_snake();
   point_t p = {10, 10};
@@ -215,4 +216,4 @@ int main(int argc, char* argv[]) {
 //  queue_print(res.queue);
   queue_free(snake);
   return EXIT_SUCCESS;
-}
+}*/

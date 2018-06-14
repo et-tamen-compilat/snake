@@ -136,15 +136,16 @@ input input_init(struct js_event e) {
 return i;
 }
 
-void draw_rectangle(struct LedCanvas *canvas, colour_t *c, int x0, int y0, int x1, int y1) {
-  draw_line(canvas, x0, y0, x1, y0, c->r, c->g, c->b);
-  draw_line(canvas, x0, y0, x0, y1, c->r, c->g, c->b);
-  draw_line(canvas, x0, y1, x1, y1, c->r, c->g, c->b);
-  draw_line(canvas, x1, y0, x1, y1, c->r, c->g, c->b);
+void draw_rectangle(struct LedCanvas *canvas, colour_t c, int x0, int y0, int x1, int y1) {
+  draw_line(canvas, x0, y0, x1, y0, c.r, c.g, c.b);
+  draw_line(canvas, x0, y0, x0, y1, c.r, c.g, c.b);
+  draw_line(canvas, x0, y1, x1, y1, c.r, c.g, c.b);
+  draw_line(canvas, x1, y0, x1, y1, c.r, c.g, c.b);
 }
 
 void draw_pause_screen(struct LedCanvas *canvas, struct LedFont *font) {
-  colour_t *blue = {0,0,255};
+  led_canvas_clear(canvas);
+  colour_t blue = {0,0,255};
   draw_text(canvas, font, 3, 3, 0, 0, 255, "PAUSED", 1);
   draw_rectangle(canvas, blue, 2, 10, 30, 18);
   draw_text(canvas, font, 4, 12, 0, 0, 255, "RESUME", 1);
@@ -213,13 +214,17 @@ int main(int argc, char **argv) {
   struct input_event *garbage = malloc(sizeof(struct js_event)*5);
   long curr_time = get_milliseconds() + (INTERVAL / 10);
   int k = 0;
+  bool paused = false;
   while (true) {
     int poll_res = poll(&p, 1, (int) MAX(curr_time - get_milliseconds(), 0));
     if (poll_res == 0) {
+      if (paused) {
+        continue;
+      }
       k++;
       printf("Timed out %ld\n", get_milliseconds());
       if (k % 10 == 9) {
-        d = get_direction(snake, food, d);
+//        d = get_direction(snake, food, d);
         if (!perform_move(snake, d, &food, walls)) {
           TIME_AFTER_DEATH = 0;
           break;
@@ -252,17 +257,19 @@ int main(int argc, char **argv) {
     }
 
     if (i == I_START) {
-      draw_pause_screen(offscreen_canvas, font);
-      bool paused = true;
-      while (paused) {
+      paused = !paused;
+      if (paused) {
+        draw_pause_screen(offscreen_canvas, font);
         offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+      }
+/*      while (paused) {
         int selection = 0;
         if (selection == 1) { //Resume game
           paused = false;
         } else if (selection == 2) { //Quit game
           return EXIT_SUCCESS;
         }
-      }
+      }*/
     }
     //printf("%i %i %i\n", e.type, e.code, e.value);
   }
