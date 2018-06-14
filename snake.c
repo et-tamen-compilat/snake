@@ -272,6 +272,7 @@ void stop_sound(){
 int handle_main(event_t event, state_t *state) {
   switch (event.type) {
     case I_INIT:
+      stop_sound();
       play_sound(1);
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % 10 == 9) {
