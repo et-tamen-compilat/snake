@@ -14,7 +14,14 @@ typedef struct {
  uint8_t y;
 } point_t;
 
-typedef struct{
+typedef enum {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+} direction;
+
+typedef struct {
   uint8_t r;
   uint8_t g;
   uint8_t b;
@@ -30,21 +37,26 @@ typedef struct node {
   struct node *next;
 } node_t;
 
+typedef struct direction_node {
+  direction point;
+  struct direction_node *next;
+} direction_node_t;
+
 typedef struct {
   node_t *head;
   node_t *tail;
   uint8_t length;
 } snake_t;
 
-typedef node_t point_node_t;
-typedef snake_t queue_t;
+typedef struct {
+  node_t *head;
+  node_t *tail;
+  uint8_t length;
+} direction_t;
 
-typedef enum {
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT
-} direction;
+typedef node_t point_node_t;
+
+typedef snake_t queue_t;
 
 typedef struct {
   point_t start;
