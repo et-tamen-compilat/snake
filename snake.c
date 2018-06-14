@@ -75,6 +75,7 @@ wall_t *create_map() {
   }
   return wall_arr;
 }
+
 //Check map for food, check it's not on top of a wall basically
 //In main, put this in a while look when generating food
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls) {
@@ -126,15 +127,15 @@ input input_init(struct js_event e) {
     i = I_B;
   } else if (e.value == 1 && e.type == 1 && e.number ==8) {
     i = I_SELECT;
-    //  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
-    //    i = I_START;
+  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
+    i = I_START;
 } else {
   printf("Invalid input event value: %i\n", e.value);
 }
 return i;
 }
 
-static long getMilliseconds() {
+static long get_milliseconds() {
   struct timeval t;
   gettimeofday(&t, NULL); 
   return (t.tv_sec * 1000) + (t.tv_usec / 1000);
@@ -191,13 +192,13 @@ int main(int argc, char **argv) {
   int fd = open("/dev/input/js0", O_RDONLY);
   struct pollfd p = (struct pollfd) { fd, POLLIN };
   struct input_event *garbage = malloc(sizeof(struct js_event)*5);
-  long curr_time = getMilliseconds() + (INTERVAL / 10);
+  long curr_time = get_milliseconds() + (INTERVAL / 10);
   int k = 0;
   while (true) {
-    int poll_res = poll(&p, 1, (int) MAX(curr_time - getMilliseconds(), 0));
+    int poll_res = poll(&p, 1, (int) MAX(curr_time - get_milliseconds(), 0));
     if (poll_res == 0) {
       k++;
-      printf("Timed out %ld\n", getMilliseconds());
+      printf("Timed out %ld\n", get_milliseconds());
       if (k % 10 == 9) {
         if (!perform_move(snake, d, &food, walls)) {
           TIME_AFTER_DEATH = 0;
