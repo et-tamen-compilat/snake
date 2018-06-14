@@ -277,6 +277,8 @@ int handle_main(event_t event, state_t *state) {
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % 10 == 9) {
         if (!perform_move(state->snake, state->d, &state->food, state->walls)) {
+          stop_sound();
+          play_sound(5);
           return 5;
           TIME_AFTER_DEATH = 0;
         }
@@ -313,6 +315,8 @@ int handle_main(event_t event, state_t *state) {
 int handle_pause(event_t event, state_t *state) {
   switch (event.type) {
     case I_INIT:
+      stop_sound();
+      play_sound(6);
     case I_UP:
       state->selection = 0;
       break;
@@ -366,6 +370,8 @@ int handle_death_throes(event_t event, state_t *state) {
 int handle_score(event_t event, state_t *state) {
   switch (event.type) {
     case I_INIT:
+      stop_sound();
+      play_sound(3);
       draw_score_screen(state->offscreen_canvas, font, state->snake->length * 10);
       state->offscreen_canvas = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
