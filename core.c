@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-bool point_equal(point_t p1, point_t p2){
+bool point_equal(point_t p1, point_t p2) {
   return (p1.x == p2.x && p1.y == p2.y);
 }
 
-bool out_bounds(point_t p, direction d){
+bool out_bounds(point_t p, direction d) {
   return (
       (p.y == 0 && d == UP) ||
       (p.y == MAX_HEIGHT - 1 && d == DOWN) ||
@@ -16,11 +16,11 @@ bool out_bounds(point_t p, direction d){
 }
 
 // Checks to see if point occurs in snake
-bool intersects(snake_t s, point_t p){
+bool intersects(snake_t s, point_t p) {
   node_t *curr = s.head;
   while (curr != NULL) {
     if (point_equal(curr->point, p)) {
-//      printf("(%i, %i) (%i, %i)\n", p.x, p.y, curr->point.x, curr->point.y);
+      //      printf("(%i, %i) (%i, %i)\n", p.x, p.y, curr->point.x, curr->point.y);
       return true;
     } 
     curr = curr->next;
@@ -28,7 +28,7 @@ bool intersects(snake_t s, point_t p){
   return false;
 }
 
-point_t direct_point(point_t p, direction d){
+point_t direct_point(point_t p, direction d) {
   switch (d){
     case UP:
       p.y = p.y - 1;
@@ -46,7 +46,7 @@ point_t direct_point(point_t p, direction d){
   return p;
 }
 
-snake_t *create_snake(){
+snake_t *create_snake() {
   snake_t *s = malloc(sizeof(snake_t));
   node_t *tail = malloc(sizeof(node_t));
   *tail = (node_t) {{4,0}, NULL};
@@ -64,7 +64,6 @@ snake_t *create_snake(){
   return s;
 }
 
-//Checks to see if two points are equal
 // Returns true if will be out of bounds
 bool illegal_direction(direction curr_d, direction new_d) {
   return (
@@ -76,19 +75,19 @@ bool illegal_direction(direction curr_d, direction new_d) {
 }
 
 //Checks to see if two nodes are equal
-bool node_equal(node_t n1, node_t n2){
+bool node_equal(node_t n1, node_t n2) {
   return (point_equal(n1.point, n2.point) && n1.next == n2.next);
 }
 
 
-bool food_wall(point_t point, int **collision_map){
+bool food_wall(point_t point, int **collision_map) {
   return (collision_map[point.x][point.y]);
 }
 
 void add_wall_to_map(int **map, wall_t *wall) {
   printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
   for (int i = 0; i < wall->length; i++) {
-  printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
+    printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
     switch (wall->direction) {
       case UP: 
         map[wall->start.x][wall->start.y - i] = 1;
@@ -112,7 +111,7 @@ int **create_collision_map(wall_t *wall_arr) {
   for (int i = 0; i < MAX_WIDTH; i++) {
     map[i] = calloc(MAX_HEIGHT, sizeof(int));
   }
-//  memset(map, 0, sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
+  //  memset(map, 0, sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
   for (int i = 0; i < NUM_WALLS; i++) {
     add_wall_to_map(map, &(wall_arr[i]));
   }
