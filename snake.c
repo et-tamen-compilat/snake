@@ -233,22 +233,22 @@ void play_sound(int i){
     printf("I am the child\n");
     switch(i){
       case 1:
-        execpl("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/classic.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ",  "arm11_24/snake/sounds/classic.m4a", NULL);
         break;
       case 2:
-        execpl("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/crazy.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/crazy.m4a", NULL);
         break;
       case 3:
-        execpl("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/menu.m4a", NULL);
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/menu.m4a", NULL);
         break;
       case 4:
-        execpl("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/eat.wav", NULL);
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/eat.wav", NULL);
         break;
       case 5:
-        execpl("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/die.wav", NULL);
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/die.wav", NULL);
         break;
       case 6:
-        execpl("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/pause.wav", NULL);
+        execlp("/usr/bin/omxplayer", " ", "arm11_24/snake/sounds/pause.wav", NULL);
         break;
     }
     _exit(0);
