@@ -22,6 +22,7 @@ wall_t *create_wall();
 colour_t multicolour(int pos);
 colour_t get_default(int pos);
 point_t get_food(snake_t *snake, wall_t* wall_arr);
+direction get_direction(snake_t *snake, point_t dest, direction d); 
 
 volatile sig_atomic_t done = 0;
 volatile struct RGBLedMatrix *matrix;
@@ -200,6 +201,7 @@ int main(int argc, char **argv) {
       k++;
       printf("Timed out %ld\n", get_milliseconds());
       if (k % 10 == 9) {
+        d = get_direction(snake, food, d);
         if (!perform_move(snake, d, &food, walls)) {
           TIME_AFTER_DEATH = 0;
           break;

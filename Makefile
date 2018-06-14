@@ -5,8 +5,8 @@ test: test.c core.c types.h
 
 all: snake main
 
-snake: snake.c core.c types.h led-matrix-c.h
-	$(CC) snake.c core.c librgbmatrix.a -o snake -lrt -lm -lpthread -lstdc++
+snake: snake.c core.c test.c types.h led-matrix-c.h
+	$(CC) snake.c core.c test.c librgbmatrix.a -o snake -lrt -lm -lpthread -lstdc++
 
 main: main.c types.h
 main2: main2.c types.h

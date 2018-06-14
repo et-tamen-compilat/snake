@@ -9,6 +9,7 @@ bool intersects(snake_t s, point_t p);
 bool point_equal(point_t p1, point_t p2);
 point_t direct_point(point_t p, direction d);
 snake_t *create_snake();
+int get_rand_int(int min, int max); 
 
 typedef struct {
   point_t parent;
@@ -17,17 +18,20 @@ typedef struct {
   bool visited;
 } info_t;
 
-void queue_enqueue(queue_t *queue, point_t nova) {
-  point_node_t *node = calloc(1, sizeof(point_node_t));
-  node->point = nova;
-  if (queue->tail != NULL) {
-    queue->tail->next = node;
-  } else {
-    queue->head = node;
+#define LINKED_LIST_PUSH(name, type, sub_type, dtype) \
+  void name##_enqueue(type *queue, dtype nova) { \
+    sub_type *node = calloc(1, sizeof(sub_type)); \
+    node->point = nova; \
+    if (queue->tail != NULL) { \
+      queue->tail->next = node; \
+    } else { \
+      queue->head = node; \
+    } \
+    queue->tail = node; \
+    queue->length++; \
   }
-  queue->tail = node;
-  queue->length++;
-}
+
+LINKED_LIST_PUSH(queue, queue_t, point_node_t, point_t);
 
 void queue_prepend(queue_t *queue, point_t nova) {
   point_node_t *node = calloc(1, sizeof(point_node_t));
@@ -129,6 +133,10 @@ result_t get_shortest_path(snake_t *snake, point_t start, point_t dest, directio
       }
     }
   }
+  for (int i = 0; i < MAX_WIDTH; i++) {
+    free(info[i]);
+  }
+  free(info);
   return (result_t) { NULL, -1, LEFT };
 }
 
@@ -153,6 +161,37 @@ result_t get_longest_path(snake_t *snake, point_t start, point_t point, directio
   return shortest;
 }
 
+void queue_free(queue_t *queue) {
+  point_node_t *curr = queue->head;
+  while (curr != NULL) {
+    point_node_t *temp = curr;
+    curr = curr->next;
+    free(temp);
+  }
+  free(queue);
+}
+
+direction get_direction(snake_t *snake, point_t dest, direction d) {
+  direction ds[] = { UP, DOWN, LEFT, RIGHT };
+  point_t first = snake->tail->point;
+  result_t result = get_shortest_path(snake, snake->tail->point, dest, d);
+  if (result.dist == -1) {
+    queue_free(result.queue);
+    return get_rand_int(0, 3);
+  }
+  point_t second = result.queue->head->next->point;
+//  point_print(second);
+  for (int i = 0; i < 4; i++) {
+    if (!out_bounds(first, ds[i])) {
+ //     point_print(direct_point(first, ds[i]));
+      if (point_equal(direct_point(first, ds[i]), second)) {
+        return ds[i];
+      }
+    }
+  }
+  queue_free(result.queue);
+}
+
 void queue_test() {
   queue_t *queue = queue_init();
   queue_print(queue);
@@ -166,12 +205,13 @@ void queue_test() {
   queue_print(queue);
 }
 
-int main(int argc, char* argv[]) {
+/*int main(int argc, char* argv[]) {
   snake_t *snake = create_snake();
   point_t p = {10, 10};
   //result_t res = get_shortest_path(snake, snake->tail->point, p, RIGHT);
-  result_t res = get_longest_path(snake, snake->tail->point, p, RIGHT);
+  direction d = get_direction(snake, p, RIGHT);
+  printf("%i\n", d);
   printf("Ended\n");
-  queue_print(res.queue);
+//  queue_print(res.queue);
   return EXIT_SUCCESS;
-}
+}*/
