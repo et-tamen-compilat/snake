@@ -205,7 +205,7 @@ void queue_test() {
   queue_print(queue);
 }
 
-/*int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   snake_t *snake = create_snake();
   point_t p = {10, 10};
   //result_t res = get_shortest_path(snake, snake->tail->point, p, RIGHT);
@@ -213,5 +213,6 @@ void queue_test() {
   printf("%i\n", d);
   printf("Ended\n");
 //  queue_print(res.queue);
+  queue_free(snake);
   return EXIT_SUCCESS;
-}*/
+}

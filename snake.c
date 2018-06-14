@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
       } 
       draw_snake(offscreen_canvas, snake, &get_default, food, k, walls);
       offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-      curr_time += (INTERVAL / 10) * multiplier;
+      curr_time = get_milliseconds() + (INTERVAL / 10) * multiplier;
       continue;
     }  
     struct js_event e;
