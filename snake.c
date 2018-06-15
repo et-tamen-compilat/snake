@@ -72,8 +72,7 @@ wall_t *create_map() {
     bool created = false;
     while (!created) {
       wall_t *wall = create_wall();
-      if ((!(wall->start.x > SNAKE_SAFETY.x) || wall->start.y > SNAKE_SAFETY.y)
-          || wall->start.x > SNAKE_SAFETY.x || !(wall->start.y > SNAKE_SAFETY.y)) {
+      if (wall->start.x > SNAKE_SAFETY.x || wall->start.y > SNAKE_SAFETY.y) {
         created = true;
         wall_arr[i] = *wall;
         free(wall);
