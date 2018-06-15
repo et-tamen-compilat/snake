@@ -32,6 +32,7 @@ struct LedFont *font;
 
 volatile sig_atomic_t done = 0;
 volatile struct RGBLedMatrix *matrix;
+int NUM_WALLS;
 
 void term(int signum) {
   printf("Hello\n");
@@ -429,6 +430,12 @@ int handle_menu(event_t event, state_t *state) {
     case I_A:
     case I_SELECT:
       state->snake = create_snake();
+      if (state->selection == 1) {
+        NUM_WALLS = 20;
+      }
+      else {
+        NUM_WALLS = 0;
+      }
       state->walls = create_map();
       state->d = RIGHT;
       state->food = get_food(state->snake, state->walls);
