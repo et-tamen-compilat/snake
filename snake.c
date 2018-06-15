@@ -268,7 +268,7 @@ int handle_main(event_t event, state_t *state) {
       stop_sound();
       play_sound(1);
     case I_TIMEOUT:
-      if (event.type == I_INIT || event.k % 10 == 9) {
+      if (event.type == I_INIT || event.k % (2 * state->multiplier) == 0) {
         //state->d = get_direction(state->snake, state->food, state->d);
         if (!perform_move(state->snake, state->d, &state->food, state->walls)) {
           stop_sound();
