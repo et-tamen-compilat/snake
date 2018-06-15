@@ -2,7 +2,7 @@
 
 #define ASSERT(expr) \
   if (!(expr)) \
-    report(__LINE__)
+  report(__LINE__)
 
 void report(int line) {
   printf("Assertion failed at line %i\n", line);
@@ -13,7 +13,7 @@ void point_equal_test() {
   point_t p2 = {1, 2};
   point_t p3 = {1, 1};
   point_t p4 = {6, 2};
- 
+
   ASSERT(point_equal(p1, p1));
   ASSERT(!(point_equal(p1, p2)));
   ASSERT(point_equal(p1, p3));
@@ -65,7 +65,7 @@ void direct_point_test() {
   ASSERT(!(point_equal(direct_point(p1, LEFT), (point_t) {4, 4})));
   ASSERT(!(point_equal(direct_point(p1, RIGHT), (point_t) {5, 6})));
   ASSERT(!(point_equal(direct_point(p1, DOWN), (point_t) {4, 6})));
-  
+
   return;
 }
 
@@ -109,11 +109,11 @@ void food_wall_test() {
   point_t p1 = (point_t) {0, 0};
   point_t p2 = (point_t) {2, 2};
   point_t p3 = (point_t) {0, 2};
-  
+
   ASSERT(food_wall(p1, map)); 
   ASSERT(!(food_wall(p2, map)));
   ASSERT(food_wall(p3,  map));
-  
+
   return;
 }
 
@@ -133,7 +133,7 @@ void get_rand_int_test() {
 }
 
 int main(int argc, char **argv) {
-  
+
   point_equal_test();
   out_bounds_test();
   intersects_test();
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
   node_equal_test();
   food_wall_test();
   get_rand_int_test();
-  
+
   printf("ALL TESTS COMPLETE\n");
   return EXIT_SUCCESS;
 }

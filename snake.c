@@ -42,6 +42,7 @@ void term(int signum) {
 
 int TIME_AFTER_DEATH = -1;
 
+// Draws the given wall to the canvas 
 void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   int x0 = wall->start.x;
   int y0 = wall->start.y;
@@ -57,7 +58,7 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   }
 }
 
-
+// Creates an array of walls
 wall_t *create_map() {
   int num_walls = NUM_WALLS;
   wall_t *wall_arr = malloc(sizeof(wall_t) * num_walls);
@@ -70,9 +71,7 @@ wall_t *create_map() {
         wall_arr[i] = *wall;
         free(wall);
       } else {
-        //printf("P1\n");
         free(wall);
-        //printf("P2\n");
       }
     }
   }
@@ -96,20 +95,16 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
   int pos = 0;
   while (current != NULL) {
     point_t *p = &(current->point);
-    //    printf("%i %i %i %i %i\n", p->x, p->y, c->r, c->g, c->b);
     colour_t k = c(len - pos);
     pos++;
-    //printf("%i %i %i\n", TIME_AFTER_DEATH, pos, TIME_AFTER_DEATH >= pos);
     if (TIME_AFTER_DEATH >= (len - pos)) {
       led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     }
     else {
       led_canvas_set_pixel(canvas, p->x, p->y, k.r, k.g, k.b);
     }  
-//    led_canvas_set_pixel(canvas, p->x, p->y, 255, 0, 0);
     current = current->next;
   }
-  //printf("%i %i\n", k, TIME_AFTER_DEATH);
   if (k % 10 == 0 && TIME_AFTER_DEATH == -1) {
     led_canvas_set_pixel(canvas, food.x, food.y, 255, 0, 0);
   }
@@ -129,14 +124,14 @@ input input_init(struct js_event e) {
     i = I_A;
   } else if (e.value == 1 && e.type == 1 && e.number == 0) {
     i = I_B;
-  } else if (e.value == 1 && e.type == 1 && e.number ==8) {
+  } else if (e.value == 1 && e.type == 1 && e.number == 8) {
     i = I_SELECT;
-  } else if (e.value == 1 && e.type == 1 && e.number ==9) {
+  } else if (e.value == 1 && e.type == 1 && e.number == 9) {
     i = I_START;
-} else {
-  printf("Invalid input event value: %i\n", e.value);
-}
-return i;
+  } else {
+    printf("Invalid input event value: %i\n", e.value);
+  }
+  return i;
 }
 
 void draw_rectangle(struct LedCanvas *canvas, colour_t c, int x0, int y0, int x1, int y1) {
@@ -149,7 +144,7 @@ void draw_rectangle(struct LedCanvas *canvas, colour_t c, int x0, int y0, int x1
 void draw_pause_screen(struct LedCanvas *canvas, struct LedFont *font, int selection) {
   led_canvas_clear(canvas);
   colour_t text = {68, 180, 244};
-  colour_t box = {244,173,31};
+  colour_t box = {244, 173, 31};
   draw_text(canvas, font, 5, 7, text.r,text.g, text.b, "PAUSED", 0);
   draw_text(canvas, font, 5, 17, text.r, text.g, text.b, "RESUME", 0);
   draw_text(canvas, font, 9, 28, text.r, text.g, text.b, "QUIT", 0);
@@ -163,8 +158,8 @@ void draw_pause_screen(struct LedCanvas *canvas, struct LedFont *font, int selec
 void draw_menu_screen(struct LedCanvas *canvas, struct LedFont *font, int selection) {
   led_canvas_clear(canvas);
   colour_t text = {68, 180, 244};
-  colour_t box = {244,173,31};
-  draw_text(canvas, font, 3,8, text.r, text.g, text.b, "CLASSIC", 0);
+  colour_t box = {244, 173, 31};
+  draw_text(canvas, font, 3, 8, text.r, text.g, text.b, "CLASSIC", 0);
   draw_text(canvas, font, 6, 17, text.r, text.g, text.b, "CRAZY", 0);
   draw_text(canvas, font, 3, 26, text.r, text.g, text.b, "AI", 0);
   draw_text(canvas, font, 14, 26, text.r, text.g, text.b, "MAZE", 0);
@@ -183,7 +178,7 @@ void draw_score_screen(struct LedCanvas *canvas, struct LedFont *font, int score
   struct LedFont *font2 = load_font(bdf_font_file);
   char score_str[5];
   sprintf(score_str, "%i", score);
-  int start_spacing  = 0;
+  int start_spacing = 0;
   //Fixes spacing on different number of digits.
   switch (strlen(score_str)) {
     case 1: start_spacing = 13; break;
@@ -201,7 +196,7 @@ void draw_retry_screen(struct LedCanvas *canvas, struct LedFont *font, int selec
   const char *bdf_font_file = "./5x8.bdf";
   struct LedFont *font2 = load_font(bdf_font_file);
   colour_t text = {68, 180, 244};
-  colour_t box = {244,173,31};
+  colour_t box = {244, 173, 31};
   draw_text(canvas, font, 5, 12, text.r, text.g, text.b, "RETRY?", 0);
   draw_text(canvas, font2, 8, 25, text.r, text.g, text.b, "Y", 0);
   draw_text(canvas, font2, 20, 25, text.r, text.g, text.b, "N", 0);
@@ -221,11 +216,10 @@ static long get_milliseconds() {
 //Takes in a number corresponding to the sound to play
 void play_sound(int i){
   int pid;
-  pid=fork();
-  if(pid==0)
+  pid = fork();
+  if(pid == 0)
   {
-    printf("I am the child\n");
-    switch(i){
+    switch (i) {
       case 1:
         execlp("/usr/bin/omxplayer", " ", "-o", "local",  "--loop", "/home/pi/arm11_24/snake/sounds/classic.m4a", NULL);
         break;
@@ -247,16 +241,11 @@ void play_sound(int i){
     }
     _exit(0);
   }
-  else
-  {
-    printf("I am the parent\n");
-//    wait();
-  } 
   return;
 }
 
 //Stops sound
-void stop_sound(){
+void stop_sound() {
   system("killall omxplayer.bin");
   return;
 }
@@ -294,7 +283,7 @@ int handle_main(event_t event, state_t *state) {
       }
       draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls);
       state->offscreen_canvas 
-          = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
+        = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
     case I_LEFT:
     case I_RIGHT:
@@ -483,16 +472,16 @@ void run_event_system(event_system_t system, void *initial) {
   while (!done) {
     //printf("Here: %i\n", done);
     int poll_res = poll(&p, 1, (int) MAX(curr_time - get_milliseconds(), 0));
- //   printf("Here3: %i\n", debug);
+    //   printf("Here3: %i\n", debug);
     int index;
     if (poll_res == 0) {
       event_t ev = { I_TIMEOUT, k++ };
-  //    printf("Here2: %i\n", debug);
+      //    printf("Here2: %i\n", debug);
       index = curr(ev, state);
-   //   printf("Here5: %i\n", debug);
+      //   printf("Here5: %i\n", debug);
       curr_time = get_milliseconds() + (INTERVAL / 10) * 5 ;//* multiplier;
     } else {
-    //  printf("Here4: %i\n", debug);
+      //  printf("Here4: %i\n", debug);
       struct js_event e;
       read(fd, &e, sizeof(struct js_event));
       input i = input_init(e);
@@ -507,7 +496,7 @@ void run_event_system(event_system_t system, void *initial) {
     if (index == EVENT_EXIT) {
       done = true;
     } else if (index != -2) {
-     // printf("Here6: %i\n", debug);
+      // printf("Here6: %i\n", debug);
       event_handler_t *nova = system.handlers[index];
       if (nova != curr) {
         printf("Here7: %i\n", debug);
@@ -532,15 +521,15 @@ int main(int argc, char **argv) {
   memset(&action, 0, sizeof(struct sigaction));
   action.sa_handler = &term;
   sigaction(SIGINT, &action, NULL);
-  
+
   struct RGBLedMatrixOptions options;
   int width, height;
   int x, y, i;
   srand(time(NULL));
   const char *bdf_font_file = "./4x6.bdf";
   font = load_font(bdf_font_file);
-  
-//  srand(45);
+
+  //  srand(45);
 
   memset(&options, 0, sizeof(options));
   options.rows = 32;
@@ -548,44 +537,31 @@ int main(int argc, char **argv) {
 
   matrix = led_matrix_create_from_options(&options, &argc, &argv);
   assert(matrix != NULL);
-//  led_canvas_get_size(state->offscreen_canvas, &width, &height);
-//  fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
- //     width, height, options.hardware_mapping);
-  /* Now, we swap the canvas. We give swap_on_vsync the buffer we
-   * just have drawn into, and wait until the next vsync happens.
-   * we get back the unused buffer to which we'll draw in the next
-   * iteration.
-   */
   state_t state
     = { NULL
       , RIGHT
-      , RIGHT
-      , led_matrix_create_offscreen_canvas(matrix)
-      , 5
-      , NULL
-      , {0,0}
+        , RIGHT
+        , led_matrix_create_offscreen_canvas(matrix)
+        , 5
+        , NULL
+        , {0,0}
       , 0
-      , 0
-      };
-  /*
-   * Make sure to always call led_matrix_delete() in the end to reset the
-   * display. Installing signal handlers for defined exit is a good idea.
-
-   */
+        , 0
+    };
 
   event_handler_t *handlers[] = 
-    { handle_menu
+  { handle_menu
     , handle_main
-    , handle_pause
-    , handle_score
-    , handle_retry
-    , handle_death_throes
-    };
+      , handle_pause
+      , handle_score
+      , handle_retry
+      , handle_death_throes
+  };
 
   event_system_t system = 
-    { handlers
+  { handlers
     , &state
-    };
+  };
 
   run_event_system(system, &state);
 
