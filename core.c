@@ -86,7 +86,7 @@ bool food_wall(point_t point, int **collision_map) {
 
 void add_wall_to_map(int **map, wall_t *wall) {
   printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
-  for (int i = 0; i < wall->length; i++) {
+  for (int i = 0; i <= wall->length; i++) {
     printf("x val: %i, y val: %i\n", wall->start.x, wall->start.y);
     switch (wall->direction) {
       case UP: 
@@ -161,26 +161,6 @@ direction get_rand_dir() {
   }
 }
 
-// Makes sure the wall doesn't go off of the map
-int calc_length(point_t start, direction d) {
-  switch (d) {
-    case UP: 
-      return start.y > WALL_MAX_LEN ? WALL_MAX_LEN : start.y;
-      break;
-    case DOWN:
-      return MAX_HEIGHT - start.y > WALL_MAX_LEN ? WALL_MAX_LEN :
-        MAX_HEIGHT - start.y;
-      break;
-    case LEFT:
-      return start.x > WALL_MAX_LEN ? WALL_MAX_LEN : start.x;
-      break;
-    case RIGHT:
-      return MAX_WIDTH - start.x > WALL_MAX_LEN ? WALL_MAX_LEN :
-        MAX_WIDTH - start.x;
-      break;
-  }
-}
-
 wall_t *create_wall() {
   wall_t *wall = malloc(sizeof(wall_t));
   wall->length = get_rand_int(WALL_MIN_LEN, WALL_MAX_LEN);
@@ -208,7 +188,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   point_t p = direct_point(snake->tail->point, d);
   for (int i = 0; i < NUM_WALLS; i++) {
     point_t point = walls[i].start;
-    for (int j = 0; j <= walls[i].length; j++) {
+    for (int j = 0; j < walls[i].length; j++) {
       if (point_equal(point, p)) {
         return false;
       }

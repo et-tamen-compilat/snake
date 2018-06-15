@@ -46,20 +46,12 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   int x0 = wall->start.x;
   int y0 = wall->start.y;
   switch (wall->direction) {
-    case UP: 
-      draw_line(canvas, x0, y0, x0, y0 - wall->length, WALL_COLOUR.r,
-          WALL_COLOUR.g, WALL_COLOUR.b);
-      break;
     case DOWN:
-      draw_line(canvas, x0, y0, x0, y0 + wall->length, WALL_COLOUR.r,
+      draw_line(canvas, x0, y0, x0, y0 + wall->length - 1, WALL_COLOUR.r,
           WALL_COLOUR.g, WALL_COLOUR.b);
       break;
     case RIGHT:
-      draw_line(canvas, x0, y0, x0 + wall->length, y0, WALL_COLOUR.r, 
-          WALL_COLOUR.g, WALL_COLOUR.b);
-      break;
-    case LEFT:
-      draw_line(canvas, x0, y0, x0 - wall->length, y0, WALL_COLOUR.r,
+      draw_line(canvas, x0, y0, x0 + wall->length - 1, y0, WALL_COLOUR.r, 
           WALL_COLOUR.g, WALL_COLOUR.b);
       break;
   }
@@ -334,7 +326,7 @@ int handle_pause(event_t event, state_t *state) {
       if (state->selection == 0) {
         return 1;
       } else if (state->selection == 1) {
-        return EVENT_EXIT;
+        return 0;
       }
       break;
     case I_UP:
