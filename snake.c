@@ -268,6 +268,18 @@ int handle_main(event_t event, state_t *state) {
     case I_INIT:
       stop_sound();
       play_sound(1);
+      state->multiplier = 3;
+      state->snake = create_snake();
+      if (state->selection2 == 1) {
+        NUM_WALLS = 20;
+      }
+      else {
+        NUM_WALLS = 0;
+      }
+      state->walls = create_map();
+      state->d = RIGHT;
+      state->food = get_food(state->snake, state->walls);
+      TIME_AFTER_DEATH = -1;
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % (2 * state->multiplier) == 0) {
         //state->d = get_direction(state->snake, state->food, state->d);
@@ -391,17 +403,17 @@ int handle_menu(event_t event, state_t *state) {
     case I_INIT:
       stop_sound();
       play_sound(3);
-      state->selection = 0;
+      state->selection2 = 0;
       break;
     case I_DOWN:
-      if (state->selection < 3) {
-        state->selection++;
+      if (state->selection2 < 3) {
+        state->selection2++;
         //printf("LEMON: %i\n", state->selection);
       }
       break;
     case I_UP:
-      if (state->selection > 0) {
-        state->selection--;
+      if (state->selection2 > 0) {
+        state->selection2--;
         //printf("CITRON: %i\n", state->selection);
       }
       break;
@@ -415,23 +427,12 @@ int handle_menu(event_t event, state_t *state) {
     case I_UP:
     case I_DOWN:
       //printf("J: %i\n", state->selection);
-      draw_menu_screen(state->offscreen_canvas, font, state->selection);
+      draw_menu_screen(state->offscreen_canvas, font, state->selection2);
       state->offscreen_canvas 
         = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
     case I_A:
     case I_SELECT:
-      state->snake = create_snake();
-      if (state->selection == 1) {
-        NUM_WALLS = 20;
-      }
-      else {
-        NUM_WALLS = 0;
-      }
-      state->walls = create_map();
-      state->d = RIGHT;
-      state->food = get_food(state->snake, state->walls);
-      TIME_AFTER_DEATH = -1;
       return 1;
     default:
       return EVENT_REMAIN;
@@ -459,9 +460,9 @@ int handle_retry(event_t event, state_t *state) {
     case I_A:
     case I_SELECT:
       if (state->selection == 0) {
-        return 0;
+        return 1;
       } else {
-        return EVENT_EXIT;
+        return 0;
       }
     default:
       return EVENT_REMAIN;
@@ -560,6 +561,7 @@ int main(int argc, char **argv) {
       , 5
       , NULL
       , {0,0}
+      , 0
       , 0
       };
   /*

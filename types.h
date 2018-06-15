@@ -8,6 +8,8 @@
 #define WALL_COLOUR (colour_t){216, 150, 18}
 #define SNAKE_SAFETY (point_t){13, 5}
 
+extern int NUM_WALLS;
+
 typedef struct {
  uint8_t x;
  uint8_t y;
@@ -85,6 +87,7 @@ typedef struct {
   wall_t *walls;
   point_t food;
   int selection;
+  int selection2;
 } state_t;
 
 typedef struct {
