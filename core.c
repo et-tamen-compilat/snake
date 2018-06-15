@@ -208,7 +208,7 @@ bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
   point_t p = direct_point(snake->tail->point, d);
   for (int i = 0; i < NUM_WALLS; i++) {
     point_t point = walls[i].start;
-    for (int j = 0; j < walls[i].length; j++) {
+    for (int j = 0; j <= walls[i].length; j++) {
       if (point_equal(point, p)) {
         return false;
       }
