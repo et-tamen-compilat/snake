@@ -250,7 +250,7 @@ void play_sound(int i){
         execlp("/usr/bin/omxplayer", " ", "-o", "local", "/home/pi/arm11_24/snake/sounds/die.wav", NULL);
         break;
       case 6:
-        execlp("aplay /home/pi/arm11_24/snake/sounds/pause.wav");
+        system("aplay /home/pi/arm11_24/snake/sounds/pause.wav");
         break;
     }
     _exit(0);
