@@ -328,6 +328,7 @@ int handle_pause(event_t event, state_t *state) {
   }
 
   switch (event.type) {
+    case I_A:
     case I_SELECT:
       if (state->selection == 0) {
         return 1;
@@ -425,6 +426,7 @@ int handle_menu(event_t event, state_t *state) {
       state->offscreen_canvas 
         = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
+    case I_A:
     case I_SELECT:
       state->snake = create_snake();
       state->walls = create_map();
@@ -455,6 +457,7 @@ int handle_retry(event_t event, state_t *state) {
       state->offscreen_canvas 
         = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
+    case I_A:
     case I_SELECT:
       if (state->selection == 0) {
         return 0;
