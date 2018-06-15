@@ -164,8 +164,10 @@ result_t get_shortest_path(snake_t *snake, point_t start, point_t dest, directio
 
 result_t get_proper_shortest_path(snake_t *snake, point_t start, point_t dest, direction d) {
   result_t result = get_shortest_path(snake, start, dest, d);
-  queue_prepend(result.queue, start); 
-  queue_enqueue(result.queue, start); 
+  if (result.dist != -1) {
+    queue_prepend(result.queue, start); 
+    queue_enqueue(result.queue, dest); 
+  }
   return result;
 }
 
@@ -195,12 +197,12 @@ result_t get_longest_path(snake_t *snake, point_t start, point_t point, directio
 direction get_direction(snake_t *snake, point_t dest, direction d) {
   direction ds[] = { UP, DOWN, LEFT, RIGHT };
   point_t first = snake->tail->point;
-  result_t result = get_shortest_path(snake, snake->tail->point, dest, d);
+  result_t result = get_proper_shortest_path(snake, snake->tail->point, dest, d);
   if (result.dist == -1) {
-    queue_free(result.queue);
+    //queue_free(result.queue);
     return get_rand_int(0, 3);
   }
-  point_t second = result.queue->head->point;
+  point_t second = result.queue->head->next->point;
 //  point_print(second);
   for (int i = 0; i < 4; i++) {
     if (!out_bounds(first, ds[i])) {

@@ -29,6 +29,7 @@ direction get_direction(snake_t *snake, point_t dest, direction d);
 bool illegal_direction(direction curr_d, direction new_d); 
 bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls);
 struct LedFont *font;
+void queue_free(snake_t *snake);
 
 volatile sig_atomic_t done = 0;
 volatile struct RGBLedMatrix *matrix;
@@ -268,23 +269,33 @@ int handle_main(event_t event, state_t *state) {
     case I_INIT:
       stop_sound();
       state->multiplier = 3;
-      state->snake = create_snake();
+      if (state->snake == NULL) {
+        state->snake = create_snake();
+        if (state->selection2 == 1) {
+          NUM_WALLS = 20;
+        } else {
+          NUM_WALLS = 0;
+        }
+        state->walls = create_map();
+        state->d = RIGHT;
+        state->nova_d = RIGHT;
+        state->food = get_food(state->snake, state->walls);
+        TIME_AFTER_DEATH = -1;
+      }
       if (state->selection2 == 1) {
-        NUM_WALLS = 20;
         play_sound(2);
       }
       else {
-        NUM_WALLS = 0;
         play_sound(1);
       }
-      state->walls = create_map();
-      state->d = RIGHT;
-      state->food = get_food(state->snake, state->walls);
-      TIME_AFTER_DEATH = -1;
+      return EVENT_REMAIN;
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % (2 * state->multiplier) == 0) {
-        //state->d = get_direction(state->snake, state->food, state->d);
-        state->d = state->nova_d;
+        if (state->selection2 == 2) {
+          state->d = get_direction(state->snake, state->food, state->d);
+        } else {
+          state->d = state->nova_d;
+        }
         if (!perform_move(state->snake, state->d, &state->food, state->walls)) {
           stop_sound();
           play_sound(5);
@@ -340,6 +351,8 @@ int handle_pause(event_t event, state_t *state) {
       if (state->selection == 0) {
         return 1;
       } else if (state->selection == 1) {
+        queue_free(state->snake);
+        state->snake = NULL;
         return 0;
       }
       break;
@@ -383,6 +396,8 @@ int handle_score(event_t event, state_t *state) {
       play_sound(3);
       draw_score_screen(state->offscreen_canvas, font, state->snake->length * 10);
       state->offscreen_canvas = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
+      queue_free(state->snake);
+      state->snake = NULL;
       return EVENT_REMAIN;
     case I_TIMEOUT:
       //printf("Kid Flash: %i\n", event.k);
