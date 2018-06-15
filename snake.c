@@ -267,14 +267,15 @@ int handle_main(event_t event, state_t *state) {
   switch (event.type) {
     case I_INIT:
       stop_sound();
-      play_sound(1);
       state->multiplier = 3;
       state->snake = create_snake();
       if (state->selection2 == 1) {
         NUM_WALLS = 20;
+        play_sound(2);
       }
       else {
         NUM_WALLS = 0;
+        play_sound(1);
       }
       state->walls = create_map();
       state->d = RIGHT;
