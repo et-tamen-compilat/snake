@@ -284,6 +284,7 @@ int handle_main(event_t event, state_t *state) {
     case I_TIMEOUT:
       if (event.type == I_INIT || event.k % (2 * state->multiplier) == 0) {
         //state->d = get_direction(state->snake, state->food, state->d);
+        state->d = state->nova_d;
         if (!perform_move(state->snake, state->d, &state->food, state->walls)) {
           stop_sound();
           play_sound(5);
@@ -300,7 +301,7 @@ int handle_main(event_t event, state_t *state) {
     case I_UP:
     case I_DOWN:
       if (!illegal_direction(state->d, event.type)) {
-        state->d = event.type;
+        state->nova_d = event.type;
       }
       return EVENT_REMAIN;
     case I_A:
@@ -557,6 +558,7 @@ int main(int argc, char **argv) {
    */
   state_t state
     = { NULL
+      , RIGHT
       , RIGHT
       , led_matrix_create_offscreen_canvas(matrix)
       , 5

@@ -82,6 +82,7 @@ typedef enum {
 typedef struct {
   snake_t *snake;
   direction d;
+  direction nova_d;
   struct LedCanvas *offscreen_canvas;
   int multiplier;
   wall_t *walls;
