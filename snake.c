@@ -426,6 +426,11 @@ int handle_menu(event_t event, state_t *state) {
         = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
     case I_SELECT:
+      state->snake = create_snake();
+      state->walls = create_map();
+      state->d = RIGHT;
+      state->food = get_food(state->snake, state->walls);
+      TIME_AFTER_DEATH = -1;
       return 1;
     default:
       return EVENT_REMAIN;
@@ -503,7 +508,9 @@ void run_event_system(event_system_t system, void *initial) {
         printf("Here7: %i\n", debug);
         k = 0;
         event_t ev = { I_INIT, k++ };
-        assert(nova(ev, state) == EVENT_REMAIN);
+        int l = nova(ev,state);
+        printf("%d/n", l);
+        assert(l == EVENT_REMAIN);
         curr = nova;
       }
     }
@@ -515,6 +522,7 @@ void run_event_system(event_system_t system, void *initial) {
 } 
 
 int main(int argc, char **argv) {
+  atexit(stop_sound);
   struct sigaction action;
   memset(&action, 0, sizeof(struct sigaction));
   action.sa_handler = &term;
@@ -543,15 +551,13 @@ int main(int argc, char **argv) {
    * we get back the unused buffer to which we'll draw in the next
    * iteration.
    */
-  snake_t *snake = create_snake();
-  wall_t *walls = create_map();
   state_t state
-    = { snake
+    = { NULL
       , RIGHT
       , led_matrix_create_offscreen_canvas(matrix)
       , 5
-      , walls
-      , get_food(snake, walls)
+      , NULL
+      , {0,0}
       , 0
       };
   /*
