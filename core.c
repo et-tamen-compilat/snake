@@ -20,14 +20,13 @@ bool intersects(snake_t s, point_t p) {
   node_t *curr = s.head;
   while (curr != NULL) {
     if (point_equal(curr->point, p)) {
-      //      printf("(%i, %i) (%i, %i)\n", p.x, p.y, curr->point.x, curr->point.y);
       return true;
     } 
     curr = curr->next;
   }
   return false;
 }
-
+// Returns the new point after the direction is applied to it
 point_t direct_point(point_t p, direction d) {
   switch (d){
     case UP:
@@ -46,6 +45,7 @@ point_t direct_point(point_t p, direction d) {
   return p;
 }
 
+// Creates a snake of length 5
 snake_t *create_snake() {
   snake_t *s = malloc(sizeof(snake_t));
   node_t *tail = malloc(sizeof(node_t));
@@ -58,7 +58,7 @@ snake_t *create_snake() {
   *b1 = (node_t) {{1,0}, b2};
   node_t *head = malloc(sizeof(node_t));
   *head = (node_t) {{0,0}, b1};
-  s->head= head;
+  s->head = head;
   s->tail = tail;
   s->length = 5;
   return s;
@@ -74,7 +74,7 @@ bool illegal_direction(direction curr_d, direction new_d) {
       );
 }
 
-//Checks to see if two nodes are equal
+// Checks to see if two nodes are equal
 bool node_equal(node_t n1, node_t n2) {
   return (point_equal(n1.point, n2.point) && n1.next == n2.next);
 }
@@ -111,7 +111,6 @@ int **create_collision_map(wall_t *wall_arr) {
   for (int i = 0; i < MAX_WIDTH; i++) {
     map[i] = calloc(MAX_HEIGHT, sizeof(int));
   }
-  //  memset(map, 0, sizeof(int) * MAX_WIDTH * MAX_HEIGHT);
   for (int i = 0; i < NUM_WALLS; i++) {
     add_wall_to_map(map, &(wall_arr[i]));
   }
@@ -119,7 +118,7 @@ int **create_collision_map(wall_t *wall_arr) {
 }
 
 
-point_t get_food(snake_t *snake, wall_t* wall_arr) {
+point_t get_food(snake_t *snake, wall_t *wall_arr) {
   point_t point;
   do {
     point.x = rand() % MAX_WIDTH;
@@ -179,12 +178,10 @@ wall_t *create_wall() {
 
 void play_sound(int i);
 
-bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls) {
+bool perform_move(snake_t *snake, direction d, point_t *food, wall_t *walls) {
   if (out_bounds(snake->tail->point, d)) {
     return false; 
   }
-  //  printf("%p\n", snake->head);
-  //  snake->head = snake->head->next;
   point_t p = direct_point(snake->tail->point, d);
   for (int i = 0; i < NUM_WALLS; i++) {
     point_t point = walls[i].start;
