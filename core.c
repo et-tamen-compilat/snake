@@ -2,6 +2,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+queue_t *queue_create();
+void queue_enqueue(queue_t *queue, point_t point);
+
 bool point_equal(point_t p1, point_t p2) {
   return (p1.x == p2.x && p1.y == p2.y);
 }
@@ -47,20 +50,12 @@ point_t direct_point(point_t p, direction d) {
 
 // Creates a snake of length 5
 snake_t *create_snake() {
-  snake_t *s = malloc(sizeof(snake_t));
-  node_t *tail = malloc(sizeof(node_t));
-  *tail = (node_t) {{4,0}, NULL};
-  node_t *b3 = malloc(sizeof(node_t));
-  *b3 = (node_t) {{3,0}, tail};
-  node_t *b2 = malloc(sizeof(node_t));
-  *b2 = (node_t) {{2,0}, b3};
-  node_t *b1 = malloc(sizeof(node_t));
-  *b1 = (node_t) {{1,0}, b2};
-  node_t *head = malloc(sizeof(node_t));
-  *head = (node_t) {{0,0}, b1};
-  s->head = head;
-  s->tail = tail;
-  s->length = 5;
+  int n = 5 /*15*/; 
+  snake_t *s = queue_init();
+  for (int i = 0; i < n; i++) {
+    point_t p = {i, 0};   
+    queue_enqueue(s, p);
+  }
   return s;
 }
 

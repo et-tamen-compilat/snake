@@ -46,7 +46,7 @@ typedef struct direction_node {
 typedef struct {
   node_t *head;
   node_t *tail;
-  uint8_t length;
+  uint32_t length;
 } snake_t;
 
 typedef struct {

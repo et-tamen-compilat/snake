@@ -11,7 +11,10 @@ point_t direct_point(point_t p, direction d);
 snake_t *create_snake();
 int get_rand_int(int min, int max); 
 
-/*void play_sound(int i) {
+/*
+int NUM_WALLS = 0;
+
+void play_sound(int i) {
 
 }*/
 
@@ -46,6 +49,26 @@ void queue_prepend(queue_t *queue, point_t nova) {
     queue->tail = node;
   } 
   queue->length++;
+}
+
+void queue_drop(queue_t *queue, int n) {
+  printf("%i %i\n", queue->length, n);
+  assert(queue->length >= n);
+  for (int i = 0; i < n; i++) {
+    point_node_t *curr = queue->head;
+    queue->head = queue->head->next;
+    free(curr);
+  }
+  if (queue->head == NULL) {
+    queue->tail = NULL;
+  }
+  queue->length -= n;
+}
+
+void queue_append_all(queue_t* a, queue_t* b) {
+  for (point_node_t *curr = a->head; curr != NULL; curr = curr->next) {
+    queue_enqueue(b, curr->point);
+  }
 }
 
 void queue_free(queue_t *queue) {
@@ -172,8 +195,20 @@ result_t get_proper_shortest_path(snake_t *snake, point_t start, point_t dest, d
 }
 
 result_t get_longest_path(snake_t *snake, point_t start, point_t point, direction d) {
-  result_t shortest = get_proper_shortest_path(snake, start, point, d);
+  queue_t *nova = queue_init();
+  result_t shortest = get_shortest_path(snake, start, point, d);
+  if (shortest.dist == -1) {
+    return shortest;
+  }
+  queue_append_all(snake, nova);
+  queue_append_all(shortest.queue, nova);
+  queue_enqueue(nova, point);
+  queue_free(shortest.queue);
+  shortest.queue = nova;
   point_node_t *curr = shortest.queue->head;
+  while (!point_equal(curr->point, start)) {
+    curr = curr->next;
+  }
   while (curr->next != NULL) {
  //   printf("K:\n");
     //queue_print(shortest.queue);
@@ -187,32 +222,89 @@ result_t get_longest_path(snake_t *snake, point_t start, point_t point, directio
     } else {
       mini.queue->tail->next = curr->next;
       curr->next = mini.queue->head;
+      //shortest.queue->length += mini.queue->length;
     }
     free(mini.queue);
   }
+  printf("J1\n");
+  queue_drop(shortest.queue, snake->length - 1);
   return shortest;
 }
 
 
 direction get_direction(snake_t *snake, point_t dest, direction d) {
+  printf("\n===\n\n");
+  printf("Current:\n");
+  queue_print(snake);
+  point_t second;
+  direction final;
+
   direction ds[] = { UP, DOWN, LEFT, RIGHT };
   point_t first = snake->tail->point;
-  result_t result = get_proper_shortest_path(snake, snake->tail->point, dest, d);
+//  result_t result = get_proper_shortest_path(snake, snake->tail->point, dest, d);
+  result_t result = get_shortest_path(snake, snake->tail->point, dest, d);
   if (result.dist == -1) {
-    //queue_free(result.queue);
+    printf("Octagon\n");
+    //return get_rand_int(0, 3);
+  } else {
+    queue_enqueue(result.queue, dest);
+    printf("Chaos\n");
+    queue_print(result.queue);
+    second = result.queue->head->point;
+    for (int i = 0; i < 4; i++) {
+      if (!out_bounds(first, ds[i])) {
+   //     point_print(direct_point(first, ds[i]));
+        if (point_equal(direct_point(first, ds[i]), second)) {
+          //queue_free(result.queue);
+          final = ds[i];
+        }
+      }
+    }
+    //point_print(first);
+    //point_print(dest);
+    //printf("Here1\n");
+    queue_t *nova = queue_init();
+    queue_append_all(snake, nova);
+    queue_append_all(result.queue, nova);
+    printf("J2\n");
+    queue_drop(nova, nova->length - (snake->length + 1));
+    //printf("Resultant:");
+    //queue_print(nova);
+    result_t check = get_shortest_path(nova, nova->tail->point, nova->head->point, result.d);
+    queue_free(nova);
+    if (check.dist != -1) {
+      printf("Passed:");
+      queue_print(check.queue);
+      return final;
+    } 
+  }
+  printf("Fail:");
+  //result = get_longest_path(snake, first, dest, d);
+  result = get_longest_path(snake, first, snake->head->point, d);
+  //queue_print(result.queue);
+  if (result.dist == -1) {
+    printf("Complete Octagon\n");
+    int k = get_rand_int(0, 1);
+    if (d <= 1) {
+      return 2 + k;
+    } else {
+      return k;
+    }
     return get_rand_int(0, 3);
   }
-  point_t second = result.queue->head->next->point;
-//  point_print(second);
+  second = result.queue->head->next->point;
+  point_print(first);
+  point_print(second);
   for (int i = 0; i < 4; i++) {
     if (!out_bounds(first, ds[i])) {
  //     point_print(direct_point(first, ds[i]));
       if (point_equal(direct_point(first, ds[i]), second)) {
         queue_free(result.queue);
-        return ds[i];
+        final = ds[i];
       }
     }
   }
+  return final;
 }
 
 void queue_test() {
@@ -228,15 +320,30 @@ void queue_test() {
   queue_print(queue);
 }
 
-/*int main(int argc, char* argv[]) {
+direction run(snake_t *snake, point_t point, int iterations, direction d) {
+  for (int i = 0; i < iterations; i++) {
+    printf("Current:\n");
+    queue_print(snake);
+    d = get_direction(snake, point, d);
+    perform_move(snake, d, &point, NULL);
+    printf("\n\n");
+  }
+  printf("\n===\n\n");
+  return d;
+}
+
+/*
+int main(int argc, char* argv[]) {
+  direction d = RIGHT;
   snake_t *snake = create_snake();
-  point_t p = {10, 10};
-  result_t res = get_longest_path(snake, snake->tail->point, p, RIGHT);
-//  direction d = get_direction(snake, p, RIGHT);
-  //printf("%i\n", d);
+  //queue_print(snake);
+  point_t p = {10, 2};
+  d = run(snake, p, 6, d);
+  //queue_print(snake);
+  p = (point_t) {11, 1};
+  run(snake, p, 11, d);
+  //queue_print(snake);
   printf("Ended\n");
-  queue_print(res.queue);
   queue_free(snake);
-  queue_free(res.queue);
   return EXIT_SUCCESS;
 }*/
