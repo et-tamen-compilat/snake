@@ -183,7 +183,7 @@ perform_move_result perform_move(snake_t *snake, direction d, point_t food, wall
     return DIES; 
   }
   point_t p = direct_point(snake->tail->point, d);
-  if (check) {
+  if (!check) {
     for (int i = 0; i < NUM_WALLS; i++) {
       point_t point = walls[i].start;
       for (int j = 0; j < walls[i].length; j++) {
@@ -197,7 +197,7 @@ perform_move_result perform_move(snake_t *snake, direction d, point_t food, wall
       }
     }
   }
-  bool eq = point_equal(*food, p);
+  bool eq = point_equal(food, p);
   if (!eq) {
     snake->head = snake->head->next;
     if (intersects(*snake, p)) {

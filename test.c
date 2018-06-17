@@ -231,7 +231,6 @@ result_t get_longest_path(snake_t *snake, point_t start, point_t point, directio
   return shortest;
 }
 
-
 direction get_direction(snake_t *snake, point_t dest, direction d) {
   printf("\n===\n\n");
   printf("Current:\n");

@@ -27,7 +27,7 @@ colour_t get_default(int pos);
 point_t get_food(snake_t *snake, wall_t* wall_arr);
 direction get_direction(snake_t *snake, point_t dest, direction d); 
 bool illegal_direction(direction curr_d, direction new_d); 
-bool perform_move(snake_t *snake, direction d, point_t* food, wall_t *walls);
+bool perform_move(snake_t *snake, direction d, point_t food, wall_t *walls, bool check);
 struct LedFont *font;
 void queue_free(snake_t *snake);
 
@@ -83,7 +83,7 @@ wall_t *create_map() {
 //In main, put this in a while look when generating food
 void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls, int power_up_time) {
   led_canvas_clear(canvas);
-  if (power_up_time > 0) {
+  if (power_up_time > 5) {
     c = &multicolour;
   }
   for (int i = 0; i < NUM_WALLS; i++) {
@@ -276,6 +276,7 @@ int handle_main(event_t event, state_t *state) {
         state->d = RIGHT;
         state->nova_d = RIGHT;
         state->food = get_food(state->snake, state->walls);
+        state->power_up_time = 0;
         TIME_AFTER_DEATH = -1;
       }
       if (state->selection2 == 1) {
@@ -302,7 +303,7 @@ int handle_main(event_t event, state_t *state) {
               state->power_up_time = 100;
             }
             play_sound(4);
-            state->food = get_food(snake, walls);
+            state->food = get_food(state->snake, state->walls);
             if (state->selection2 == 1 && state->power_up_time == 0) {
               if (use_power_up()) {
                 state->power_up_time = -1; 
@@ -391,7 +392,7 @@ int handle_death_throes(event_t event, state_t *state) {
         //printf("Flash\n");
         return 3;
       } else {
-        draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls);
+        draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls, 0);
         state->offscreen_canvas = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
         TIME_AFTER_DEATH++;
         return EVENT_REMAIN;
