@@ -69,6 +69,11 @@ bool illegal_direction(direction curr_d, direction new_d) {
       );
 }
 
+bool use_power_up() {
+  int k = get_rand_int(0, 4);
+  return k == 0; 
+}
+
 // Checks to see if two nodes are equal
 bool node_equal(node_t n1, node_t n2) {
   return (point_equal(n1.point, n2.point) && n1.next == n2.next);
@@ -173,20 +178,22 @@ wall_t *create_wall() {
 
 void play_sound(int i);
 
-bool perform_move(snake_t *snake, direction d, point_t *food, wall_t *walls) {
+perform_move_result perform_move(snake_t *snake, direction d, point_t food, wall_t *walls, bool check) {
   if (out_bounds(snake->tail->point, d)) {
-    return false; 
+    return DIES; 
   }
   point_t p = direct_point(snake->tail->point, d);
-  for (int i = 0; i < NUM_WALLS; i++) {
-    point_t point = walls[i].start;
-    for (int j = 0; j < walls[i].length; j++) {
-      if (point_equal(point, p)) {
-        return false;
-      }
-      switch (walls[i].direction) {
-        case DOWN: point.y++; break;
-        case RIGHT: point.x++; break;
+  if (check) {
+    for (int i = 0; i < NUM_WALLS; i++) {
+      point_t point = walls[i].start;
+      for (int j = 0; j < walls[i].length; j++) {
+        if (point_equal(point, p)) {
+          return DIES;
+        }
+        switch (walls[i].direction) {
+          case DOWN: point.y++; break;
+          case RIGHT: point.x++; break;
+        }
       }
     }
   }
@@ -194,7 +201,7 @@ bool perform_move(snake_t *snake, direction d, point_t *food, wall_t *walls) {
   if (!eq) {
     snake->head = snake->head->next;
     if (intersects(*snake, p)) {
-      return false;
+      return DIES;
     } 
   } 
   node_t *nova = malloc(sizeof(node_t));
@@ -202,11 +209,12 @@ bool perform_move(snake_t *snake, direction d, point_t *food, wall_t *walls) {
   snake->tail->next = nova;
   snake->tail = nova;
   if (eq) {
-    play_sound(4);
-    *food = get_food(snake, walls);
+    //play_sound(4);
+    //*food = get_food(snake, walls);
     snake->length++;
+    return EATS;
   }
-  return true;
+  return STATIC;
 }
 
 

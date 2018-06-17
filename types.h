@@ -89,7 +89,14 @@ typedef struct {
   point_t food;
   int selection;
   int selection2;
+  int power_up_time; 
 } state_t;
+
+typedef enum {
+  DIES,
+  STATIC,
+  EATS
+} perform_move_result;
 
 typedef struct {
   input type;
