@@ -81,9 +81,9 @@ wall_t *create_map() {
 
 //Check map for food, check it's not on top of a wall basically
 //In main, put this in a while look when generating food
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls, bool power_up) {
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls, int power_up_time) {
   led_canvas_clear(canvas);
-  if (power_up_time) {
+  if (power_up_time > 0) {
     c = &multicolour;
   }
   for (int i = 0; i < NUM_WALLS; i++) {
@@ -110,7 +110,11 @@ void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, poin
     current = current->next;
   }
   if (k % 10 == 0 && TIME_AFTER_DEATH == -1) {
-    led_canvas_set_pixel(canvas, food.x, food.y, 255, 0, 0);
+    if (power_up_time >= 0) {
+      led_canvas_set_pixel(canvas, food.x, food.y, 255, 0, 0);
+    } else {
+      led_canvas_set_pixel(canvas, food.x, food.y, 174, 83, 239);
+    }
   }
 }
 
@@ -312,7 +316,7 @@ int handle_main(event_t event, state_t *state) {
             return 5;
         }
       }
-      draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls, state->power_up_time > 0);
+      draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls, state->power_up_time);
       state->offscreen_canvas 
         = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
       return EVENT_REMAIN;
