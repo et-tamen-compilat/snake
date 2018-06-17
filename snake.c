@@ -360,7 +360,7 @@ int handle_pause(event_t event, state_t *state) {
 int handle_death_throes(event_t event, state_t *state) {
   switch (event.type) {
     case I_TIMEOUT:
-      /*if (event.k % 10 != 0) {
+      if (event.k % 10 != 0) {
         return EVENT_REMAIN;
       }
       if (TIME_AFTER_DEATH == state->snake->length) {
@@ -371,14 +371,14 @@ int handle_death_throes(event_t event, state_t *state) {
         state->offscreen_canvas = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
         TIME_AFTER_DEATH++;
         return EVENT_REMAIN;
-      }*/
-      if (TIME_AFTER_DEATH != 1) {
+      }
+      /*if (TIME_AFTER_DEATH != 1) {
         TIME_AFTER_DEATH = 1; 
         draw_snake(state->offscreen_canvas, state->snake, &get_default, state->food, event.k, state->walls);
         state->offscreen_canvas = led_matrix_swap_on_vsync(matrix, state->offscreen_canvas);
         fflush(stdout);
       }
-      return EVENT_REMAIN;
+      return EVENT_REMAIN;*/
       break;
     default:
       return EVENT_REMAIN;
