@@ -25,7 +25,7 @@ wall_t *create_wall();
 colour_t multicolour(int pos);
 colour_t get_default(int pos);
 point_t get_food(snake_t *snake, wall_t* wall_arr);
-direction get_direction(snake_t *snake, point_t dest, direction d); 
+direction get_direction(snake_t *snake, point_t dest, direction d, wall_t *walls); 
 bool illegal_direction(direction curr_d, direction new_d); 
 bool perform_move(snake_t *snake, direction d, point_t food, wall_t *walls, bool check);
 struct LedFont *font;
@@ -267,7 +267,7 @@ int handle_main(event_t event, state_t *state) {
       state->multiplier = 3;
       if (state->snake == NULL) {
         state->snake = create_snake();
-        if (state->selection2 == 1) {
+        if (state->selection2 == 1 || state->selection2 == 2) {
           NUM_WALLS = 20;
         } else {
           NUM_WALLS = 0;
@@ -289,7 +289,7 @@ int handle_main(event_t event, state_t *state) {
     case I_TIMEOUT:
      if (event.type == I_INIT || event.k % (2 * state->multiplier) == 0) {
         if (state->selection2 == 2) {
-          state->d = get_direction(state->snake, state->food, state->d);
+          state->d = get_direction(state->snake, state->food, state->d, state->walls);
         } else {
           state->d = state->nova_d;
         }

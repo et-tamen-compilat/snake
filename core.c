@@ -178,24 +178,29 @@ wall_t *create_wall() {
 
 void play_sound(int i);
 
+bool intersects_walls(wall_t *walls, point_t p) {
+  for (int i = 0; i < NUM_WALLS; i++) {
+    point_t point = walls[i].start;
+    for (int j = 0; j < walls[i].length; j++) {
+      if (point_equal(point, p)) {
+        return true;
+      }
+      switch (walls[i].direction) {
+        case DOWN: point.y++; break;
+        case RIGHT: point.x++; break;
+      }
+    }
+  }
+  return false;
+}
+
 perform_move_result perform_move(snake_t *snake, direction d, point_t food, wall_t *walls, bool check) {
   if (out_bounds(snake->tail->point, d)) {
     return DIES; 
   }
   point_t p = direct_point(snake->tail->point, d);
-  if (!check) {
-    for (int i = 0; i < NUM_WALLS; i++) {
-      point_t point = walls[i].start;
-      for (int j = 0; j < walls[i].length; j++) {
-        if (point_equal(point, p)) {
-          return DIES;
-        }
-        switch (walls[i].direction) {
-          case DOWN: point.y++; break;
-          case RIGHT: point.x++; break;
-        }
-      }
-    }
+  if (!check && intersects_walls(walls, p)) {
+    return DIES;
   }
   bool eq = point_equal(food, p);
   if (!eq) {
