@@ -112,9 +112,6 @@ int **create_collision_map(wall_t *wall_arr) {
   for (int i = 0; i < MAX_WIDTH; i++) {
     map[i] = calloc(MAX_HEIGHT, sizeof(int));
   }
-  for (int i = 0; i < NUM_WALLS; i++) {
-    add_wall_to_map(map, &(wall_arr[i]));
-  }
   return map; 
 }
 

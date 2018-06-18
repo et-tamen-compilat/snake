@@ -69,24 +69,23 @@ void draw_walls(struct LedCanvas *canvas, int **walls) {
 }
 
 // Creates an array of walls
-wall_t *create_map() {
+int **create_map() {
   int num_walls = NUM_WALLS;
-  wall_t *wall_arr = malloc(sizeof(wall_t) * num_walls);
+  int **collision_map = create_collision_map();
   for (int i = 0; i < num_walls; i++) {
     bool created = false;
     while (!created) {
       wall_t *wall = create_wall();
       if (wall->start.x > SNAKE_SAFETY.x || wall->start.y > SNAKE_SAFETY.y) {
         created = true;
-        wall_arr[i] = *wall;
+        add_wall_to_map(collision_map, wall);
         free(wall);
       } else {
         free(wall);
       }
     }
   }
-  int collision_map = create_collision_map(wall_arr);
-  return wall_arr;
+  return collision_map;
 }
 
 //Check map for food, check it's not on top of a wall basically
