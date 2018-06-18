@@ -44,6 +44,7 @@ void term(int signum) {
 int TIME_AFTER_DEATH = -1;
 
 // Draws the given wall to the canvas 
+/*
 void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
   int x0 = wall->start.x;
   int y0 = wall->start.y;
@@ -56,6 +57,14 @@ void draw_wall(struct LedCanvas *canvas, wall_t *wall) {
       draw_line(canvas, x0, y0, x0 + wall->length - 1, y0, WALL_COLOUR.r, 
           WALL_COLOUR.g, WALL_COLOUR.b);
       break;
+  }
+}*/
+
+void draw_walls(struct LedCanvas *canvas, int **walls) {
+  for (int i = 0; i < MAX_WIDTH; i++) {
+    for (int j = 0; j < MAX_HEIGHT; j++) {
+      set_pixel(canvas, i, j, WALL_COLOUR.r, WALL_COLOUR.g, WALL_COLOUR.b);
+    }
   }
 }
 
@@ -76,19 +85,21 @@ wall_t *create_map() {
       }
     }
   }
+  int collision_map = create_collision_map(wall_arr);
   return wall_arr;
 }
 
 //Check map for food, check it's not on top of a wall basically
 //In main, put this in a while look when generating food
-void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, wall_t *walls, int power_up_time) {
+void draw_snake(struct LedCanvas *canvas, snake_t *s, colour_function_t *c, point_t food, int k, int **walls, int power_up_time) {
   led_canvas_clear(canvas);
   if (power_up_time > 5) {
     c = &multicolour;
   }
-  for (int i = 0; i < NUM_WALLS; i++) {
+  draw_walls(canvas, walls);
+  /*for (int i = 0; i < NUM_WALLS; i++) {
     draw_wall(canvas, &walls[i]);
-  }
+  }*/
   node_t *current = s->head;
   int len = 0;
   while (current != NULL) {
