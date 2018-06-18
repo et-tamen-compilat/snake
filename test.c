@@ -145,7 +145,7 @@ void info_free(info_t **info) {
   free(info);
 }
 
-result_t get_shortest_path(snake_t *snake, point_t start, point_t dest, direction d, wall_t *walls) {
+result_t get_shortest_path(snake_t *snake, point_t start, point_t dest, direction d, int **walls) {
   queue_t *queue = queue_init();
   info_t **info = calloc(MAX_WIDTH, sizeof(info_t *)); 
   for (int i = 0; i < MAX_WIDTH; i++) {
@@ -232,7 +232,7 @@ result_t get_longest_path(snake_t *snake, point_t start, point_t point, directio
   return shortest;
 }
 
-direction get_direction(snake_t *snake, point_t dest, direction d, wall_t *walls) {
+direction get_direction(snake_t *snake, point_t dest, direction d, int **walls) {
   printf("\n===\n\n");
   printf("Current:\n");
   queue_print(snake);

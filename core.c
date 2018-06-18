@@ -118,12 +118,12 @@ int **create_collision_map(wall_t *wall_arr) {
 }
 
 
-point_t get_food(snake_t *snake, wall_t *wall_arr) {
+point_t get_food(snake_t *snake, int **wall_arr) {
   point_t point;
   do {
     point.x = rand() % MAX_WIDTH;
     point.y = rand() % MAX_HEIGHT;
-  } while(intersects(*snake, point) || food_wall(point, create_collision_map(wall_arr)));
+  } while(intersects(*snake, point) || food_wall(point, wall_arr));
   return point;
 }
 
@@ -178,23 +178,11 @@ wall_t *create_wall() {
 
 void play_sound(int i);
 
-bool intersects_walls(wall_t *walls, point_t p) {
-  for (int i = 0; i < NUM_WALLS; i++) {
-    point_t point = walls[i].start;
-    for (int j = 0; j < walls[i].length; j++) {
-      if (point_equal(point, p)) {
-        return true;
-      }
-      switch (walls[i].direction) {
-        case DOWN: point.y++; break;
-        case RIGHT: point.x++; break;
-      }
-    }
-  }
-  return false;
+bool intersects_walls(int **walls, point_t p) {
+  return walls[p.x][p.y];
 }
 
-perform_move_result perform_move(snake_t *snake, direction d, point_t food, wall_t *walls, bool check) {
+perform_move_result perform_move(snake_t *snake, direction d, point_t food, int **walls, bool check) {
   if (out_bounds(snake->tail->point, d)) {
     return DIES; 
   }

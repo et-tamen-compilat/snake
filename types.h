@@ -85,7 +85,7 @@ typedef struct {
   direction nova_d;
   struct LedCanvas *offscreen_canvas;
   int multiplier;
-  wall_t *walls;
+  int **walls;
   point_t food;
   int selection;
   int selection2;
