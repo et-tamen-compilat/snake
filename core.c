@@ -1,6 +1,7 @@
 #include "types.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <assert.h>
 
 queue_t *queue_create();
 void queue_enqueue(queue_t *queue, point_t point);
@@ -148,6 +149,7 @@ colour_t multicolour(int pos) {
 
 //returns random int in range
 int get_rand_int(int min, int max) {
+  assert(min <= max);
   return rand() % (max + 1 - min) + min;
 }
 
